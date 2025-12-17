@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Report, Employee } from '../types';
-import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2 } from 'lucide-react';
+import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut } from 'lucide-react';
 import { generateBatchForms } from '../utils/pdfGenerator';
 
 interface DailyLogProps {
@@ -68,6 +68,26 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
       case 'غياب': return 'غياب (مساءلة)';
       default: return type;
     }
+  };
+
+  const renderDetails = (report: Report) => {
+    if (report.type === 'غياب') return `${report.daysCount} أيام`;
+    if (report.type === 'تأخر_انصراف') {
+        return (
+            <div className="flex flex-col gap-0.5">
+                {report.lateArrivalTime && (
+                    <span className="flex items-center gap-1 text-[10px]"><Clock size={10} className="text-indigo-500" /> حضور: {report.lateArrivalTime}</span>
+                )}
+                {report.earlyDepartureTime && (
+                    <span className="flex items-center gap-1 text-[10px]"><LogOut size={10} className="text-rose-500" /> انصراف: {report.earlyDepartureTime}</span>
+                )}
+                {report.absenceSession && (
+                    <span className="text-[10px] text-slate-400">الحصة: {report.absenceSession}</span>
+                )}
+            </div>
+        );
+    }
+    return report.notes || '---';
   };
 
   return (
@@ -160,8 +180,8 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                       {getTypeName(report.type)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">
-                    {report.notes || '---'}
+                  <td className="px-6 py-4">
+                    {renderDetails(report)}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button

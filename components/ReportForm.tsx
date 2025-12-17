@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Report, Employee, ReportType } from '../types';
-import { Send, FileText, Clock, Users, X, UserCheck } from 'lucide-react';
+import { Send, FileText, Clock, Users, X, UserCheck, LogOut } from 'lucide-react';
 
 interface ReportFormProps {
   selectedEmployees: Employee[];
@@ -65,7 +65,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
     
     setIsSubmitting(true);
     try {
-      // إذا كان تعديل، نعدل تقريراً واحداً، إذا كان جديداً ننشئ للكل
       if (editingReport) {
         await onSave({ ...formData, employeeId: selectedEmployees[0].id } as Report, selectedEmployees[0].id);
         onCancelEdit();
@@ -124,8 +123,8 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="space-y-1.5 lg:col-span-1">
             <label className="text-sm font-bold text-slate-700">نوع الحالة</label>
             <select
               value={formData.type}
@@ -139,7 +138,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
             </select>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 lg:col-span-1">
             <label className="text-sm font-bold text-slate-700">التاريخ</label>
             <input
               type="date"
@@ -151,22 +150,20 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
           </div>
 
           {formData.type === 'غياب' && (
-            <>
-              <div className="space-y-1.5">
-                <label className="text-sm font-bold text-slate-700">إلى تاريخ</label>
-                <input
-                  type="date"
-                  value={formData.endDate}
-                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
-                />
-              </div>
-            </>
+            <div className="space-y-1.5 lg:col-span-1">
+              <label className="text-sm font-bold text-slate-700">إلى تاريخ</label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
+              />
+            </div>
           )}
 
           {formData.type === 'تأخر_انصراف' && (
             <>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 lg:col-span-1">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-1"><Clock size={14}/> وقت الحضور</label>
                 <input
                   type="time"
@@ -175,7 +172,16 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-semibold"
                 />
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 lg:col-span-1">
+                <label className="text-sm font-bold text-slate-700 flex items-center gap-1"><LogOut size={14}/> وقت الانصراف</label>
+                <input
+                  type="time"
+                  value={formData.earlyDepartureTime}
+                  onChange={(e) => setFormData({ ...formData, earlyDepartureTime: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-rose-500 font-semibold"
+                />
+              </div>
+              <div className="space-y-1.5 lg:col-span-1">
                 <label className="text-sm font-bold text-slate-700 flex items-center gap-1"><Users size={14}/> الحصة</label>
                 <select
                   value={formData.absenceSession}
