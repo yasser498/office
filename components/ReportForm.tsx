@@ -133,8 +133,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
             >
               <option value="غياب">غياب (مساءلة)</option>
               <option value="تأخر_انصراف">تنبيه تأخر / انصراف</option>
-              <option value="تأخر">تأخر بسيط</option>
-              <option value="مخالفة">مخالفة</option>
             </select>
           </div>
 

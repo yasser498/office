@@ -1,5 +1,5 @@
 
-export type ReportType = 'غياب' | 'تأخر' | 'مخالفة' | 'تأخر_انصراف';
+export type ReportType = 'غياب' | 'تأخر_انصراف';
 
 export interface Employee {
   id: number;
