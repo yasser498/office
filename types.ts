@@ -1,0 +1,42 @@
+
+export type ReportType = 'غياب' | 'تأخر' | 'مخالفة' | 'تأخر_انصراف';
+
+export interface Employee {
+  id: number;
+  name: string;
+  civilId?: string;      // السجل المدني
+  specialization?: string; // التخصص
+  level?: string;        // المستوى / المرتبة
+  workplace?: string;    // العمل الحالي
+  phone?: string;        // الجوال
+  department?: string;
+  position?: string;
+  employeeCode?: string;
+  grade?: string;
+}
+
+export interface Report {
+  id?: number;
+  employeeId: number;
+  date: string;          // تاريخ البداية
+  endDate?: string;      // تاريخ النهاية (للغياب)
+  daysCount?: number;    // عدد أيام الغياب
+  type: ReportType;
+  notes: string;
+  actionTaken: string;
+  principalName?: string; // مدير المدرسة
+  
+  // حقول خاصة بتنبيه التأخر والانصراف
+  lateArrivalTime?: string;
+  absenceSession?: string;
+  earlyDepartureTime?: string;
+}
+
+export interface DBConfig {
+  dbName: string;
+  version: number;
+  stores: {
+    employees: string;
+    reports: string;
+  };
+}
