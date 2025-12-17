@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3 } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
 import HistoryList from './components/HistoryList';
 import DailyLog from './components/DailyLog';
+import StatisticsView from './components/StatisticsView';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 
@@ -20,16 +21,24 @@ const App: React.FC = () => {
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
-  const [viewMode, setViewMode] = useState<'employees' | 'daily_log'>('employees');
+  const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics'>('employees');
   
   const [tempEmployeeData, setTempEmployeeData] = useState<Employee | null>(null);
 
   useEffect(() => {
     dbUtils.getSetting('principalName').then(name => { if (name) setPrincipalName(name); }).catch(console.error);
     dbUtils.getSetting('schoolName').then(name => { if (name) setSchoolName(name); }).catch(console.error);
-    // تحميل كافة التقارير للسجل العام
-    dbUtils.getAllReports().then(setAllReports).catch(console.error);
+    refreshAllReports();
   }, []);
+
+  const refreshAllReports = async () => {
+    try {
+      const reports = await dbUtils.getAllReports();
+      setAllReports(reports);
+    } catch (error) {
+      console.error('Error fetching all reports:', error);
+    }
+  };
 
   const handleSaveSettings = async () => {
     try {
@@ -54,7 +63,7 @@ const App: React.FC = () => {
     setEditingReport(null);
     setIsEditingEmployee(false);
     setTempEmployeeData(null);
-    setViewMode('employees'); // العودة لعرض الموظفين عند الاختيار
+    if (viewMode === 'statistics') setViewMode('employees'); 
   };
 
   const selectedEmployees = useMemo(() => 
@@ -76,12 +85,6 @@ const App: React.FC = () => {
     };
     loadReports();
   }, [selectedIds, getReports]);
-
-  // تحديث قائمة السجل العام عند حدوث أي تغيير
-  const refreshAllReports = async () => {
-    const reports = await dbUtils.getAllReports();
-    setAllReports(reports);
-  };
 
   const handleUpdateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +166,7 @@ const App: React.FC = () => {
             <div className="bg-white/20 p-2 rounded-lg">
               <LayoutDashboard size={28} />
             </div>
-            <h1 className="text-2xl font-black tracking-tighter">شؤون الموظفين</h1>
+            <h1 className="text-2xl font-black tracking-tighter">شؤون الموظفين الذكية</h1>
           </div>
           
           <div className="flex flex-wrap items-center gap-3 bg-indigo-800/40 p-2.5 rounded-2xl border border-indigo-400/20 w-full lg:w-auto">
@@ -188,33 +191,35 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <aside className="lg:col-span-4 space-y-4">
             {/* التبويبات الرئيسية */}
-            <div className="bg-white p-2 rounded-2xl border border-slate-100 flex gap-2">
+            <div className="bg-white p-2 rounded-2xl border border-slate-100 flex flex-col gap-1">
               <button 
                 onClick={() => setViewMode('employees')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all ${viewMode === 'employees' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all ${viewMode === 'employees' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <Users size={18} />
-                الموظفون
+                الموظفون والتقارير
               </button>
               <button 
                 onClick={() => setViewMode('daily_log')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all ${viewMode === 'daily_log' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all ${viewMode === 'daily_log' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
               >
                 <ClipboardList size={18} />
-                السجل اليومي
+                السجل العام والطباعة
+              </button>
+              <button 
+                onClick={() => setViewMode('statistics')}
+                className={`w-full flex items-center justify-start gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all ${viewMode === 'statistics' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+              >
+                <BarChart3 size={18} />
+                الإحصائيات والتحليل
               </button>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 sticky top-24 max-h-[calc(100vh-180px)] flex flex-col">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 sticky top-24 max-h-[calc(100vh-280px)] flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 font-black text-slate-800 text-lg">
                   <Users size={20} className="text-indigo-600" />
                   قائمة الموظفين
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full border border-indigo-100">
-                    مختار: {selectedIds.length}
-                  </span>
                 </div>
               </div>
 
@@ -250,7 +255,9 @@ const App: React.FC = () => {
           </aside>
 
           <section className="lg:col-span-8 space-y-8 pb-10">
-            {viewMode === 'daily_log' ? (
+            {viewMode === 'statistics' ? (
+              <StatisticsView reports={allReports} employees={employees} />
+            ) : viewMode === 'daily_log' ? (
               <DailyLog reports={allReports} employees={employees} onDeleteReport={handleDeleteReport} />
             ) : (
               <>
@@ -260,7 +267,7 @@ const App: React.FC = () => {
                       <User size={64} className="opacity-20" />
                     </div>
                     <h2 className="text-2xl font-black text-slate-400">ابدأ باختيار موظف أو أكثر</h2>
-                    <p className="mt-2 text-slate-400 max-w-xs">يمكنك اختيار عدة موظفين لتطبيق مساءلة غياب عليهم جميعاً مرة واحدة</p>
+                    <p className="mt-2 text-slate-400 max-w-xs">اختر الأسماء من القائمة الجانبية لإجراء الحالات أو عرض التاريخ</p>
                   </div>
                 ) : (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
@@ -281,7 +288,7 @@ const App: React.FC = () => {
                         <form onSubmit={handleUpdateEmployee} className="space-y-5 pt-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
-                              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">الاسم</label>
+                              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">الاسم الكامل</label>
                               <input 
                                 type="text" 
                                 value={tempEmployeeData.name} 
@@ -298,7 +305,24 @@ const App: React.FC = () => {
                                 className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
                               />
                             </div>
-                            {/* ... بقية حقول التعديل كما هي ... */}
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">التخصص</label>
+                              <input 
+                                type="text" 
+                                value={tempEmployeeData.specialization || ''} 
+                                onChange={(e) => setTempEmployeeData({...tempEmployeeData, specialization: e.target.value})}
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-black text-slate-400 uppercase tracking-widest">رقم الوظيفة</label>
+                              <input 
+                                type="text" 
+                                value={tempEmployeeData.employeeCode || ''} 
+                                onChange={(e) => setTempEmployeeData({...tempEmployeeData, employeeCode: e.target.value})}
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                              />
+                            </div>
                           </div>
                           <div className="flex gap-2">
                             <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg">حفظ التعديلات</button>
@@ -313,7 +337,7 @@ const App: React.FC = () => {
                                 {selectedEmployees.length}
                                </div>
                                <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-                                {selectedEmployees.length === 1 ? selectedEmployees[0].name : 'إجراء جماعي لمجموعة مختارة'}
+                                {selectedEmployees.length === 1 ? selectedEmployees[0].name : 'إجراء جماعي للمجموعة مختارة'}
                                </h2>
                             </div>
                             <div className="flex flex-wrap gap-3 mt-3">
@@ -323,7 +347,7 @@ const App: React.FC = () => {
                                   <span className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-sm font-bold border border-indigo-100">السجل: {selectedEmployees[0].civilId}</span>
                                 </>
                               ) : (
-                                <p className="text-slate-500 font-bold">سيتم تطبيق التقارير على كافة الأسماء المختارة في القائمة الجانبية.</p>
+                                <p className="text-slate-500 font-bold">سيتم تطبيق التقرير على {selectedEmployees.length} أسماء مختارة.</p>
                               )}
                             </div>
                           </div>

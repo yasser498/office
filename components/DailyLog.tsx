@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
-import { Report, Employee } from '../types';
-import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut } from 'lucide-react';
+import { Report, Employee, ReportType } from '../types';
+import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut, Filter } from 'lucide-react';
 import { generateBatchForms } from '../utils/pdfGenerator';
 
 interface DailyLogProps {
@@ -13,6 +13,7 @@ interface DailyLogProps {
 const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports }) => {
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('الكل');
   const [selectedReportIds, setSelectedReportIds] = useState<number[]>([]);
 
   const employeeMap = useMemo(() => {
@@ -29,10 +30,11 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
         const matchesSearch = !searchQuery || 
           emp?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           emp?.civilId?.includes(searchQuery);
-        return matchesDate && matchesSearch;
+        const matchesType = typeFilter === 'الكل' || r.type === typeFilter;
+        return matchesDate && matchesSearch && matchesType;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [reports, dateFilter, searchQuery, employeeMap]);
+  }, [reports, dateFilter, searchQuery, typeFilter, employeeMap]);
 
   const toggleSelect = (id: number) => {
     setSelectedReportIds(prev => 
@@ -76,10 +78,10 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
         return (
             <div className="flex flex-col gap-0.5">
                 {report.lateArrivalTime && (
-                    <span className="flex items-center gap-1 text-[10px]"><Clock size={10} className="text-indigo-500" /> حضور: {report.lateArrivalTime}</span>
+                    <span className="flex items-center gap-1 text-[10px] text-slate-600"><Clock size={10} className="text-indigo-500" /> حضور: {report.lateArrivalTime}</span>
                 )}
                 {report.earlyDepartureTime && (
-                    <span className="flex items-center gap-1 text-[10px]"><LogOut size={10} className="text-rose-500" /> انصراف: {report.earlyDepartureTime}</span>
+                    <span className="flex items-center gap-1 text-[10px] text-slate-600"><LogOut size={10} className="text-rose-500" /> انصراف: {report.earlyDepartureTime}</span>
                 )}
                 {report.absenceSession && (
                     <span className="text-[10px] text-slate-400">الحصة: {report.absenceSession}</span>
@@ -100,7 +102,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
             </div>
             <div>
               <h3 className="text-xl font-black text-slate-800">السجل العام واليومي</h3>
-              <p className="text-xs text-slate-500 font-bold">إجمالي التقارير في النظام: {reports.length}</p>
+              <p className="text-xs text-slate-500 font-bold">يتم عرض التقارير حسب الفلاتر المختارة أدناه</p>
             </div>
           </div>
           
@@ -116,7 +118,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="relative">
             <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -127,10 +129,22 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
             />
           </div>
           <div className="relative">
+            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="w-full pr-10 pl-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold appearance-none"
+            >
+              <option value="الكل">جميع أنواع الحالات</option>
+              <option value="غياب">غياب فقط</option>
+              <option value="تأخر_انصراف">تأخر / انصراف فقط</option>
+            </select>
+          </div>
+          <div className="relative">
             <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
               type="text"
-              placeholder="بحث باسم الموظف في السجل..."
+              placeholder="بحث باسم الموظف..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pr-10 pl-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold"
@@ -142,7 +156,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
       <div className="overflow-x-auto">
         <table className="w-full text-right">
           <thead>
-            <tr className="bg-slate-50 text-slate-500 text-xs font-black uppercase tracking-wider">
+            <tr className="bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-wider">
               <th className="px-6 py-4 text-center w-12">
                 <button onClick={toggleSelectAll} className="text-indigo-600 hover:scale-110 transition-transform">
                   {selectedReportIds.length === filteredReports.length && filteredReports.length > 0 ? <CheckSquare size={20}/> : <Square size={20}/>}
@@ -158,7 +172,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
           <tbody className="divide-y divide-slate-50">
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">لا توجد تقارير مطابقة للبحث</td>
+                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">لا توجد تقارير مطابقة للفلاتر المختارة</td>
               </tr>
             ) : filteredReports.map((report) => {
               const emp = employeeMap.get(report.employeeId);
@@ -171,12 +185,12 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                     </button>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-slate-800 text-sm">{emp?.name || '---'}</div>
-                    <div className="text-[10px] text-slate-400">{emp?.civilId}</div>
+                    <div className="font-bold text-slate-800 text-sm leading-tight">{emp?.name || '---'}</div>
+                    <div className="text-[10px] text-slate-400 font-mono tracking-tighter">{emp?.civilId}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm font-mono">{report.date}</td>
+                  <td className="px-6 py-4 text-[13px] font-mono font-bold text-slate-600">{report.date}</td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-black bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${report.type === 'غياب' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
                       {getTypeName(report.type)}
                     </span>
                   </td>
@@ -187,6 +201,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                     <button
                       onClick={() => report.id && window.confirm('حذف التقرير نهائياً؟') && onDeleteReport(report.id)}
                       className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
+                      title="حذف"
                     >
                       <Trash2 size={16} />
                     </button>

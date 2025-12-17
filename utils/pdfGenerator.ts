@@ -13,7 +13,169 @@ const getArabicDayName = (dateString: string): string => {
   }
 };
 
-// وظيفة مساعدة لتوليد محتوى HTML لنموذج واحد (تنبيه تأخر)
+const printContent = (htmlContent: string) => {
+  const oldFrame = document.getElementById('print-iframe');
+  if (oldFrame) document.body.removeChild(oldFrame);
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'print-iframe';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '100%';
+  iframe.style.bottom = '100%';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+
+  const doc = iframe.contentWindow?.document;
+  if (doc) {
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+    
+    setTimeout(() => {
+      if (iframe.contentWindow) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      }
+    }, 500);
+  }
+};
+
+const getCommonStyles = () => `
+  @page { size: A4; margin: 0; }
+  body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; font-size: 9pt; }
+  .page-container { width: 190mm; margin: 10mm auto; min-height: 277mm; display: flex; flex-direction: column; position: relative; box-sizing: border-box; padding: 5mm; }
+  .page-break { page-break-after: always; height: 0; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .header-info { width: 40%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
+  .logo-container { width: 20%; text-align: center; }
+  .logo-container img { max-width: 110px; height: auto; }
+  .title-section { text-align: center; margin-bottom: 15px; }
+  .title-section h1 { font-size: 13pt; margin: 0; font-weight: 900; border-bottom: 2px solid black; display: inline-block; padding-bottom: 4px; }
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+  .data-table th, .data-table td { border: 1px solid black; padding: 6px; text-align: center; font-size: 9pt; font-weight: bold; }
+  .data-table th { background: #f2f2f2; color: #000; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .stats-card { border: 1.5px solid black; padding: 10px; text-align: center; }
+  .stats-card h4 { margin: 0; font-size: 8pt; border-bottom: 1px solid black; padding-bottom: 5px; margin-bottom: 5px; }
+  .stats-card div { font-size: 16pt; font-weight: 900; }
+  .signature-section { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; font-weight: bold; }
+`;
+
+export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
+  const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+  const currentDate = new Date().toLocaleDateString('ar-SA');
+
+  const topEmployeesRows = stats.topEmployees.map((item: any, idx: number) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td style="text-align: right; padding-right: 10px;">${item.employee?.name}</td>
+      <td>${item.employee?.civilId}</td>
+      <td>${item.count}</td>
+    </tr>
+  `).join('');
+
+  const monthlyRows = monthNames.map((name, idx) => {
+    const val = stats.monthlyData[idx] || 0;
+    return val > 0 ? `<tr><td>${name}</td><td>${val} سجل</td></tr>` : '';
+  }).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head>
+      <meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+      <style>
+        ${getCommonStyles()}
+        .section-title { background: #336655; color: white; padding: 5px 10px; font-weight: bold; margin-bottom: 10px; font-size: 10pt; }
+      </style>
+    </head>
+    <body>
+      <div class="page-container">
+        <div class="header">
+          <div class="header-info">
+            <div>المملكة العربية السعودية</div>
+            <div>وزارة التعليم</div>
+            <div>الإدارة العامة للتعليم بجدة</div>
+            <div>${schoolName}</div>
+          </div>
+          <div class="logo-container">
+            <img src="${MINISTRY_LOGO_URL}" alt="شعار الوزارة">
+          </div>
+          <div style="width: 40%; text-align: left; font-weight: bold;">
+            التاريخ: ${currentDate}هـ
+          </div>
+        </div>
+
+        <div class="title-section">
+          <h1>تقرير الإحصائيات والتحليل العام للانضباط</h1>
+        </div>
+
+        <div class="section-title">أولاً: ملخص عام</div>
+        <div class="stats-grid">
+          <div class="stats-card">
+            <h4>إجمالي السجلات المسجلة</h4>
+            <div>${stats.totalReports}</div>
+          </div>
+          <div class="stats-card">
+            <h4>إجمالي حالات الغياب</h4>
+            <div>${stats.absenceCount}</div>
+          </div>
+          <div class="stats-card">
+            <h4>إجمالي تنبيهات التأخر</h4>
+            <div>${stats.lateCount}</div>
+          </div>
+        </div>
+
+        <div class="section-title">ثانياً: قائمة الموظفين الأكثر تسجيلاً (قائمة المتابعة)</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 10%;">م</th>
+              <th style="width: 45%;">اسم الموظف</th>
+              <th style="width: 25%;">السجل المدني</th>
+              <th style="width: 20%;">عدد السجلات</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${topEmployeesRows || '<tr><td colspan="4">لا توجد بيانات مسجلة</td></tr>'}
+          </tbody>
+        </table>
+
+        <div class="section-title">ثالثاً: النشاط الشهري (توزيع السجلات)</div>
+        <table class="data-table" style="width: 50%; margin-right: 0;">
+          <thead>
+            <tr>
+              <th>الشهر</th>
+              <th>عدد الحالات</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${monthlyRows || '<tr><td colspan="2">لا توجد سجلات شهرية</td></tr>'}
+          </tbody>
+        </table>
+
+        <div class="signature-section">
+          <div style="text-align: center;">
+            <p>معد التقرير</p>
+            <p>................................</p>
+          </div>
+          <div style="text-align: center;">
+            <p>يعتمد مدير المدرسة</p>
+            <p>${principalName}</p>
+            <p>التوقيع: ...........................</p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  printContent(html);
+};
+
 const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: string) => {
   const dayName = getArabicDayName(report.date);
   const civilId = String(employee.civilId || '').padStart(10, ' ').slice(-10);
@@ -138,7 +300,6 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
     </div>`;
 };
 
-// وظيفة مساعدة لتوليد محتوى HTML لنموذج واحد (مساءلة غياب)
 const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, principalName: string) => {
   const dayName = getArabicDayName(report.date);
   const endDayName = getArabicDayName(report.endDate || report.date);
@@ -272,9 +433,6 @@ export const generateBatchForms = async (batch: { employee: Employee, report: Re
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const principalNameSetting = await dbUtils.getSetting('principalName') || '..........';
 
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
-
   const formsHTML = batch.map((item, index) => {
     let formContent = '';
     if (item.report.type === 'تأخر_انصراف') {
@@ -283,78 +441,53 @@ export const generateBatchForms = async (batch: { employee: Employee, report: Re
       formContent = getAbsenceHTML(item.employee, item.report, schoolName, principalNameSetting);
     }
     
-    // إضافة فاصل صفحات إلا بعد آخر نموذج
     const pageBreak = index < batch.length - 1 ? '<div class="page-break"></div>' : '';
     return formContent + pageBreak;
   }).join('');
 
-  const content = `
+  const fullHTML = `
     <!DOCTYPE html>
     <html dir="rtl" lang="ar">
     <head>
       <meta charset="UTF-8">
-      <title>طباعة مجمعة - ${batch.length} نماذج</title>
+      <title>طباعة مجمعة</title>
       <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
       <style>
         @page { size: A4; margin: 0; }
         body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; font-size: 9pt; }
         .page-container { width: 190mm; margin: 10mm auto; min-height: 277mm; display: flex; flex-direction: column; position: relative; box-sizing: border-box; }
         .page-break { page-break-after: always; height: 0; }
-        
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .header-info { width: 40%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
         .logo-container { width: 20%; text-align: center; }
         .logo-container img { max-width: 110px; height: auto; }
-        .header-left { width: 40%; } 
-
         .title-section { text-align: center; margin-bottom: 10px; }
         .title-section h1 { font-size: 11pt; margin: 0; font-weight: 900; border-bottom: 1.5px solid black; display: inline-block; padding-bottom: 2px; }
-        .title-section p { font-size: 8pt; margin: 2px 0; }
-        
         .civil-id-box { display: flex; justify-content: flex-start; margin-bottom: 10px; width: 100%; }
         .civil-id-inner { border: 1px solid black; display: flex; align-items: center; }
         .civil-id-label { background: #336655; color: white; padding: 2px 10px; font-weight: bold; font-size: 9pt; border-left: 1px solid black; }
-        
         .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
         .data-table th, .data-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 9pt; font-weight: bold; }
         .data-table th { background: #336655; color: white; }
-
-        .form-body, .content-box { font-size: 9pt; line-height: 1.5; margin-bottom: 8px; }
         .bullet-point { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: bold; }
         .diamond { color: #000; font-size: 12pt; }
         .input-line { border-bottom: 1px dotted black; min-width: 80px; display: inline-block; text-align: center; }
         .dynamic-data { font-weight: 900; }
-
         .absence-line { background: #f9f9f9; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold; font-size: 9.5pt; margin-bottom: 10px; }
-        .section-title { font-weight: 900; text-decoration: underline; margin-bottom: 4px; font-size: 10pt; }
-
         .signature-row, .signatures { display: flex; justify-content: space-between; margin: 8px 0; font-weight: bold; font-size: 9.5pt; }
         .divider { border-top: 1.5px solid #000; margin: 8px 0; }
-        
         .decision-box { border: 1.5px solid black; padding: 8px; margin-top: 5px; font-size: 9pt; font-weight: bold; }
-        .decision-line { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-        
         .notes-box { border: 1px solid black; padding: 6px; font-size: 8pt; margin-top: auto; line-height: 1.4; }
-        .note-footer { font-size: 8pt; margin-top: 5px; color: #333; font-style: italic; }
-        
-        @media print {
-          body { background: none; }
-          .page-container { margin: 10mm auto; border: none; }
-        }
+        @media print { .page-container { margin: 10mm auto; } }
       </style>
     </head>
-    <body>
-      ${formsHTML}
-      <script>window.onload = () => { setTimeout(() => window.print(), 1000); }</script>
-    </body>
+    <body>${formsHTML}</body>
     </html>
   `;
 
-  printWindow.document.write(content);
-  printWindow.document.close();
+  printContent(fullHTML);
 };
 
-// الدوال الفردية القديمة تستخدم الآن الوظيفة الموحدة للتبسيط
 export const generateLateArrivalDepartureForm = async (employee: Employee, report: Report) => {
     return generateBatchForms([{ employee, report }]);
 };
@@ -364,9 +497,6 @@ export const generateOfficialAbsenceForm = async (employee: Employee, report: Re
 };
 
 export const generateEmployeePDF = (employee: Employee, reports: Report[]) => {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
-
   const content = `
     <!DOCTYPE html>
     <html dir="rtl" lang="ar">
@@ -407,10 +537,8 @@ export const generateEmployeePDF = (employee: Employee, reports: Report[]) => {
           `).join('')}
         </tbody>
       </table>
-      <script>window.onload = () => window.print();</script>
     </body>
     </html>
   `;
-  printWindow.document.write(content);
-  printWindow.document.close();
+  printContent(content);
 };
