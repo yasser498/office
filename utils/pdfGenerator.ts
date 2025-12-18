@@ -108,7 +108,6 @@ const getCommonStyles = () => `
   .section-label { font-weight: 900; color: #000; text-decoration: underline; margin-bottom: 5px; font-size: 11pt; }
   .dynamic-data { font-weight: 900; border-bottom: 1px solid black; padding: 0 5px; }
   
-  /* ملاحظات بحجم 8 */
   .notes-box { border: 1px dashed #444; padding: 8px; margin: 8px 0; font-size: 8pt; background: #fffcf0; }
   
   .important-notes { border: 1.5px solid black; padding: 8px; margin-top: 8px; font-size: 8pt; }
@@ -119,8 +118,7 @@ const getCommonStyles = () => `
   .checkbox-item { display: flex; align-items: center; gap: 8px; }
   .checkbox-square { width: 14px; height: 14px; border: 1.5px solid black; display: inline-block; shrink: 0; }
   
-  /* حجم 7 لقرار الغياب */
-  .small-decision { font-size: 7pt !important; }
+  .small-text-7 { font-size: 7pt !important; }
 `;
 
 const gt = (gender: 'boys' | 'girls', masc: string, fem: string) => gender === 'boys' ? masc : fem;
@@ -299,16 +297,16 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
-          <div class="section-label">(1) طلب الإفادة :</div>
-          <div class="signature-row">
+          <div class="section-label small-text-7">(1) طلب الإفادة :</div>
+          <div class="signature-row small-text-7">
             <span>${gt(gender, 'الأستاذ:', 'الأستاذة:')} <span class="dynamic-data">${employee.name}</span></span>
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
-          <p style="font-weight: 700;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
-          <p style="text-align: justify; font-weight: 700; line-height: 1.6;">
+          <p class="small-text-7" style="font-weight: 700;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
+          <p class="small-text-7" style="text-align: justify; font-weight: 700; line-height: 1.6;">
             من خلال متابعة سجل الدوام تبين غيابكم خلال الفترة الموضحة أعلاه ، نأمل الإفادة عن أسباب ذلك وتقديم ما يؤيد عذركم خلال أسبوع من تاريخه.
           </p>
-          <div class="signature-row" style="margin-top: 15px;">
+          <div class="signature-row small-text-7" style="margin-top: 15px;">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
             <span>التاريخ: <span class="dynamic-data">${report.date} هـ</span></span>
@@ -316,17 +314,18 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
-          <div class="section-label">(2) الإفادة :</div>
-          <div class="signature-row">
+          <div class="section-label small-text-7">(2) الإفادة :</div>
+          <div class="signature-row small-text-7">
             <span>${gt(gender, 'المكرم مدير المدرسة /', 'المكرمة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span></span>
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
-          <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
-          <p style="margin: 5px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 35px; margin-bottom: 10px;"></div>
-          <p style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
+          <p class="small-text-7" style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
+          <p class="small-text-7" style="margin: 5px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
+          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
+          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>
+          <p class="small-text-7" style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
-          <div class="signature-row" style="margin-top: 15px;">
+          <div class="signature-row small-text-7" style="margin-top: 15px;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: .................</span>
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
@@ -334,15 +333,15 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="border: 2px solid #000; padding: 12px; background: #fafafa;">
-          <div class="section-label">(3) قرار ${gt(gender, 'مدير المدرسة :', 'مديرة المدرسة :')}</div>
-          <div class="checkbox-list small-decision">
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة مرضية.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة وفاة.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة مرافقة.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة اضطرارية.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> يعتمد الحسم لعدم قبول العذر.</div>
+          <div class="section-label small-text-7">(3) قرار ${gt(gender, 'مدير المدرسة :', 'مديرة المدرسة :')}</div>
+          <div class="checkbox-list small-text-7">
+            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة مرضية بعد التأكد من نظامية التقرير.</div>
+            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة وفاة.</div>
+            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة مرافقة.</div>
+            <div class="checkbox-item"><span class="checkbox-square"></span> يحتسب غيابه من رصيده للإجازات الاضطرارية لقبول عذره إذا كان رصيده يسمح وإلا يحسم عليه.</div>
+            <div class="checkbox-item"><span class="checkbox-square"></span> يعتمد الحسم لعدم قبول عذره.</div>
           </div>
-          <div class="signature-row" style="margin-top: 15px;">
+          <div class="signature-row small-text-7" style="margin-top: 15px;">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:') } <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
@@ -360,6 +359,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
     </div>`;
 };
 
+// الدوال المساعدة للطباعة
 export const generateExitPermit = async (employee: Employee, startTime?: string, endTime?: string, reason?: string) => {
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
