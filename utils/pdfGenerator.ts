@@ -86,34 +86,35 @@ const getCommonStyles = () => `
     align-items: center; margin-bottom: 8px; 
     width: 100%; height: 80px;
   }
-  .header-info { flex: 1; font-size: 8.5pt; font-weight: 700; line-height: 1.4; text-align: right; }
+  .header-info { flex: 1; font-size: 9pt; font-weight: 700; line-height: 1.4; text-align: right; }
   .logo-container { flex: 1; text-align: center; }
   .logo-container img { max-width: 90px; height: auto; }
-  .header-left { flex: 1; text-align: left; font-weight: 700; font-size: 8.5pt; }
+  .header-left { flex: 1; text-align: left; font-weight: 700; font-size: 9pt; }
 
   .title-section { text-align: center; margin-bottom: 8px; width: 100%; }
   .title-section h1 { 
-    font-size: 13pt; margin: 0; font-weight: 900; 
+    font-size: 11pt; margin: 0; font-weight: 900; 
     border-bottom: 2.5px solid black; display: inline-block; padding-bottom: 2px; 
   }
-  .title-section p { font-size: 7.5pt; margin: 2px 0 0 0; font-weight: 700; }
+  .title-section p { font-size: 8pt; margin: 2px 0 0 0; font-weight: 700; }
 
   .data-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid black; }
-  .data-table th, .data-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 8.5pt; font-weight: 700; }
-  .data-table th { background: #f2f2f2; font-weight: 900; }
+  .data-table th, .data-table td { border: 1px solid black; padding: 4px; text-align: center; }
+  .data-table td { font-size: 9pt; font-weight: 700; }
+  .data-table th { background: #336655; color: white; font-weight: 900; font-size: 11pt; }
   
   .civil-id-box { display: flex; direction: ltr; margin-right: 5px; }
-  .digit { width: 18px; height: 18px; border: 1px solid black; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 1px; background: white; font-size: 8.5pt; }
+  .digit { width: 18px; height: 18px; border: 1px solid black; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 1px; background: white; font-size: 9pt; }
 
   .signature-row { display: flex; justify-content: space-between; margin: 6px 0; font-weight: 900; font-size: 9pt; }
   
   .divider { border-top: 1.5px solid #000; margin: 8px 0; }
-  .section-label { font-weight: 900; color: #336655; text-decoration: underline; margin-bottom: 2px; font-size: 9pt; }
+  .section-label { font-weight: 900; color: #336655; text-decoration: underline; margin-bottom: 2px; font-size: 11pt; }
   .dynamic-data { font-weight: 900; color: #000; }
-  .notes-box { border: 1px dashed #444; padding: 4px; margin: 4px 0; font-size: 8pt; background: #fffcf0; }
-  .footer-notice { font-size: 8pt; font-weight: 900; margin-top: 5px; color: #000; }
-  .important-notes { margin-top: 8px; border: 1px solid black; padding: 6px; font-size: 7.5pt; }
-  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 2px; }
+  .notes-box { border: 1px dashed #444; padding: 4px; margin: 4px 0; font-size: 9pt; background: #fffcf0; }
+  .footer-notice { font-size: 9pt; font-weight: 900; margin-top: 5px; color: #000; }
+  .important-notes { margin-top: 8px; border: 1px solid black; padding: 6px; font-size: 9pt; }
+  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 2px; font-size: 11pt; }
   .important-notes-list { margin: 0; padding-right: 15px; font-weight: 700; }
 `;
 
@@ -143,7 +144,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
         </div>
 
         <div style="display: flex; align-items: center; margin-bottom: 8px;">
-           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8pt;">السجل المدني</div>
+           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 9pt;">السجل المدني</div>
            <div class="civil-id-box" style="border: 1.2px solid black; padding: 2px; background: #eee;">${civilIdHtml}</div>
         </div>
 
@@ -222,8 +223,8 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
         </div>
 
         <div style="border: 2px solid black; padding: 6px; margin-top: 6px; background: #fdfdfd;">
-          <div style="text-decoration: underline; margin-bottom: 4px; font-size: 10pt; font-weight: 900;">رأي مدير/ة المدرسة:</div>
-          <div style="display: flex; flex-direction: column; gap: 5px; font-weight: 900; margin-bottom: 5px;">
+          <div class="section-label" style="text-decoration: underline; color: black; margin-bottom: 4px;">رأي مدير/ة المدرسة:</div>
+          <div style="display: flex; flex-direction: column; gap: 5px; font-weight: 900; margin-bottom: 5px; font-size: 9pt;">
             <label> ( &nbsp;&nbsp; ) عذره/ا مقبول </label>
             <label> ( &nbsp;&nbsp; ) عذره/ا غير مقبول ويحسم عليه/ا </label>
           </div>
@@ -264,7 +265,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="display: flex; align-items: center; margin-bottom: 8px;">
-           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8pt;">السجل المدني</div>
+           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 9pt;">السجل المدني</div>
            <div class="civil-id-box" style="border: 1.2px solid black; padding: 2px; background: #eee;">${civilIdHtml}</div>
         </div>
 
@@ -291,7 +292,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
           </tbody>
         </table>
 
-        <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 5px; text-align: center; font-weight: 900; font-size: 9pt; margin-bottom: 8px;">
+        <div style="background: #f2f2f2; border: 1.5 solid #000; padding: 5px; text-align: center; font-weight: 900; font-size: 9pt; margin-bottom: 8px;">
           إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date}</span>) تغيبت/تغيبت عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date}</span>)
         </div>
 
@@ -333,12 +334,12 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
 
         <div style="border: 2px solid #000; padding: 8px; background: #fafafa;">
           <div class="section-label">(3) قرار مدير/ة المدرسة :</div>
-          <div style="display: flex; flex-direction: column; gap: 5px; margin: 5px 0; font-weight: 900; font-size: 8.5pt;">
-            <div>(...........) تحتسب له/ا إجازة مرضية بعد التأكد من نظامية التقرير.</div>
-            <div>(...........) تحتسب له/ا إجازة وفاة.</div>
-            <div>(...........) تحتسب له/ا إجازة مرافقة.</div>
-            <div>(...........) يحتسب غيابه/ا من رصيده/ا للإجازات الاضطرارية لقبول عذره/ا إذا كان رصيده/ا يسمح وإلا يحسم عليه/ا.</div>
-            <div>(...........) يعتمد الحسم لعدم قبول عذره/ا.</div>
+          <div style="display: flex; flex-direction: column; gap: 5px; margin: 5px 0; font-weight: 900; font-size: 9pt;">
+            <div>❑ تحتسب له/ا إجازة مرضية بعد التأكد من نظامية التقرير.</div>
+            <div>❑ تحتسب له/ا إجازة وفاة.</div>
+            <div>❑ تحتسب له/ا إجازة مرافقة.</div>
+            <div>❑ يحتسب غيابه/ا من رصيده/ا للإجازات الاضطرارية لقبول عذره/ا إذا كان رصيده/ا يسمح وإلا يحسم عليه/ا.</div>
+            <div>❑ يعتمد الحسم لعدم قبول عذره/ا.</div>
           </div>
           <div class="signature-row" style="margin-top: 8px;">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
@@ -428,15 +429,15 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
         <div class="pdf-section-title">أولاً: ملخص عام للمدرسة</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div style="border: 1.5px solid black; padding: 6px; text-align: center;">
-            <h4 style="margin: 0; font-size: 7.5pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">إجمالي السجلات</h4>
+            <h4 style="margin: 0; font-size: 8pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">إجمالي السجلات</h4>
             <div style="font-size: 13pt; font-weight: 900;">${stats.totalReports}</div>
           </div>
           <div style="border: 1.5px solid black; padding: 6px; text-align: center;">
-            <h4 style="margin: 0; font-size: 7.5pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">حالات الغياب</h4>
+            <h4 style="margin: 0; font-size: 8pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">حالات الغياب</h4>
             <div style="font-size: 13pt; font-weight: 900;">${stats.absenceCount}</div>
           </div>
           <div style="border: 1.5px solid black; padding: 6px; text-align: center;">
-            <h4 style="margin: 0; font-size: 7.5pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">تنبيهات التأخر</h4>
+            <h4 style="margin: 0; font-size: 8pt; border-bottom: 1px solid black; padding-bottom: 3px; margin-bottom: 3px;">تنبيهات التأخر</h4>
             <div style="font-size: 13pt; font-weight: 900;">${stats.lateCount}</div>
           </div>
         </div>
