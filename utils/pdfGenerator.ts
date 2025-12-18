@@ -63,7 +63,7 @@ const printContent = (htmlContent: string) => {
 const getCommonStyles = () => `
   @page { 
     size: A4; 
-    margin: 0.5cm 1cm 1cm 1cm; /* الهامش العلوي 0.5 سم */
+    margin: 0.5cm 1cm 1cm 1cm; 
   }
   body { 
     font-family: 'Cairo', sans-serif; 
@@ -83,38 +83,38 @@ const getCommonStyles = () => `
   
   .header { 
     display: flex; justify-content: space-between; 
-    align-items: center; margin-bottom: 10px; 
-    width: 100%; height: 85px;
+    align-items: center; margin-bottom: 8px; 
+    width: 100%; height: 80px;
   }
-  .header-info { flex: 1; font-size: 8.5pt; font-weight: 700; line-height: 1.5; text-align: right; }
+  .header-info { flex: 1; font-size: 8.5pt; font-weight: 700; line-height: 1.4; text-align: right; }
   .logo-container { flex: 1; text-align: center; }
-  .logo-container img { max-width: 95px; height: auto; }
+  .logo-container img { max-width: 90px; height: auto; }
   .header-left { flex: 1; text-align: left; font-weight: 700; font-size: 8.5pt; }
 
-  .title-section { text-align: center; margin-bottom: 10px; width: 100%; }
+  .title-section { text-align: center; margin-bottom: 8px; width: 100%; }
   .title-section h1 { 
     font-size: 13pt; margin: 0; font-weight: 900; 
     border-bottom: 2.5px solid black; display: inline-block; padding-bottom: 2px; 
   }
   .title-section p { font-size: 7.5pt; margin: 2px 0 0 0; font-weight: 700; }
 
-  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 1.5px solid black; }
-  .data-table th, .data-table td { border: 1px solid black; padding: 5px 4px; text-align: center; font-size: 8.5pt; font-weight: 700; }
+  .data-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; border: 1.5px solid black; }
+  .data-table th, .data-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 8.5pt; font-weight: 700; }
   .data-table th { background: #f2f2f2; font-weight: 900; }
   
   .civil-id-box { display: flex; direction: ltr; margin-right: 5px; }
-  .digit { width: 20px; height: 20px; border: 1px solid black; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 1px; background: white; font-size: 9pt; }
+  .digit { width: 18px; height: 18px; border: 1px solid black; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 1px; background: white; font-size: 8.5pt; }
 
-  .signature-section { margin-top: 10px; display: flex; justify-content: space-between; font-weight: 900; font-size: 9pt; }
-  .signature-row { display: flex; justify-content: space-between; margin: 8px 0; font-weight: 900; font-size: 9pt; }
+  .signature-row { display: flex; justify-content: space-between; margin: 6px 0; font-weight: 900; font-size: 9pt; }
   
-  .divider { border-top: 1.5px solid #000; margin: 10px 0; }
-  .section-label { font-weight: 900; color: #336655; text-decoration: underline; margin-bottom: 3px; font-size: 9.5pt; }
+  .divider { border-top: 1.5px solid #000; margin: 8px 0; }
+  .section-label { font-weight: 900; color: #336655; text-decoration: underline; margin-bottom: 2px; font-size: 9pt; }
   .dynamic-data { font-weight: 900; color: #000; }
-  .two-column-layout { display: flex; gap: 15px; width: 100%; }
-  .column { flex: 1; }
-  .pdf-section-title { background: #336655; color: white; padding: 4px 10px; font-weight: 900; margin-bottom: 8px; font-size: 9.5pt; border-radius: 4px; }
-  .notes-box { border: 1px dashed #666; padding: 5px; margin-top: 5px; font-size: 8.5pt; color: #333; }
+  .notes-box { border: 1px dashed #444; padding: 4px; margin: 4px 0; font-size: 8pt; background: #fffcf0; }
+  .footer-notice { font-size: 8pt; font-weight: 900; margin-top: 5px; color: #000; }
+  .important-notes { margin-top: 10px; border: 1px solid black; padding: 8px; font-size: 8pt; }
+  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 4px; }
+  .important-notes-list { margin: 0; padding-right: 20px; font-weight: 700; }
 `;
 
 const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: string, principalName: string) => {
@@ -143,7 +143,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
         </div>
 
         <div style="display: flex; align-items: center; margin-bottom: 8px;">
-           <div style="background: #336655; color: white; padding: 3px 10px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8.5pt;">السجل المدني</div>
+           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8pt;">السجل المدني</div>
            <div class="civil-id-box" style="border: 1.2px solid black; padding: 2px; background: #eee;">${civilIdHtml}</div>
         </div>
 
@@ -168,34 +168,34 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           </tbody>
         </table>
 
-        <div style="margin-top: 5px;">
+        <div>
           <div class="signature-row">
             <span>المكرم/ة الأستاذ/ة: <span class="dynamic-data">${employee.name}</span></span>
             <span>وفقه/ا الله</span>
           </div>
-          <div style="font-weight: 900; margin: 3px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</div>
-          <p style="margin: 3px 0; font-weight: 700;">إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date}</span>، اتضح لنا ما يلي:</p>
+          <div style="font-weight: 900; margin: 2px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</div>
+          <p style="margin: 2px 0; font-weight: 700;">إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date}</span>، اتضح لنا ما يلي:</p>
           
           <div style="margin-right: 15px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: 900;">
-              <span style="font-size: 12pt;">❑</span>
-              <span>تأخركم من بداية الدوام وحضوركم الساعة ( <span style="border-bottom: 1.5px solid black; min-width: 80px; display: inline-block; text-align: center;">${report.lateArrivalTime || '---'}</span> )</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-weight: 900;">
+              <span style="font-size: 11pt;">❑</span>
+              <span>تأخركم من بداية الدوام وحضوركم الساعة ( <span style="border-bottom: 1.5px solid black; min-width: 70px; display: inline-block; text-align: center;">${report.lateArrivalTime || '---'}</span> )</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: 900;">
-              <span style="font-size: 12pt;">❑</span>
-              <span>عدم تواجدكم أثناء العمل في الحصة ( <span style="border-bottom: 1.5px solid black; min-width: 80px; display: inline-block; text-align: center;">${report.absenceSession || '---'}</span> )</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-weight: 900;">
+              <span style="font-size: 11pt;">❑</span>
+              <span>عدم تواجدكم أثناء العمل في الحصة ( <span style="border-bottom: 1.5px solid black; min-width: 70px; display: inline-block; text-align: center;">${report.absenceSession || '---'}</span> )</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: 900;">
-              <span style="font-size: 12pt;">❑</span>
-              <span>انصرافكم مبكراً قبل نهاية الدوام من الساعة ( <span style="border-bottom: 1.5px solid black; min-width: 80px; display: inline-block; text-align: center;">${report.earlyDepartureTime || '---'}</span> )</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-weight: 900;">
+              <span style="font-size: 11pt;">❑</span>
+              <span>انصرافكم مبكراً قبل نهاية الدوام من الساعة ( <span style="border-bottom: 1.5px solid black; min-width: 70px; display: inline-block; text-align: center;">${report.earlyDepartureTime || '---'}</span> )</span>
             </div>
           </div>
 
-          ${report.notes ? `<div class="notes-box"><b>ملاحظة إضافية:</b> ${report.notes}</div>` : ''}
+          ${report.notes ? `<div class="notes-box"><b>ملاحظات الإدارة:</b> ${report.notes}</div>` : ''}
 
-          <p style="margin-top: 8px; font-weight: 700;">نأمل توضيح أسباب ذلك مع إرفاق ما يؤيد عذركم ،،،،،، ولكم تحياتي</p>
+          <p style="margin-top: 5px; font-weight: 700;">نأمل توضيح أسباب ذلك مع إرفاق ما يؤيد عذركم ،،،،،، ولكم تحياتي</p>
           
-          <div class="signature-row" style="margin-top: 10px;">
+          <div class="signature-row">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: ..........................</span>
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
@@ -210,20 +210,20 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
              <span>المكرم/ة مدير/ة المدرسة / <span class="dynamic-data">${principalName}</span></span>
              <span>وفقه/ا الله</span>
           </div>
-          <p style="margin: 3px 0; font-weight: 700;">أفيدكم أن أسباب ذلك هي :</p>
-          <div style="border-bottom: 1px dotted black; height: 32px;"></div>
-          <div style="border-bottom: 1px dotted black; height: 32px;"></div>
+          <p style="margin: 2px 0; font-weight: 700;">أفيدكم أن أسباب ذلك هي :</p>
+          <div style="border-bottom: 1px dotted black; height: 28px;"></div>
+          <div style="border-bottom: 1px dotted black; height: 28px;"></div>
           
-          <div class="signature-row" style="margin-top: 10px;">
+          <div class="signature-row" style="margin-top: 8px;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: ..........................</span>
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
 
-        <div style="border: 2px solid black; padding: 8px; margin-top: 8px; background: #fdfdfd;">
-          <div style="text-decoration: underline; margin-bottom: 5px; font-size: 11pt; font-weight: 900;">رأي مدير/ة المدرسة:</div>
-          <div style="display: flex; flex-direction: column; gap: 8px; font-weight: 900; margin-bottom: 8px;">
+        <div style="border: 2px solid black; padding: 6px; margin-top: 6px; background: #fdfdfd;">
+          <div style="text-decoration: underline; margin-bottom: 4px; font-size: 10pt; font-weight: 900;">رأي مدير/ة المدرسة:</div>
+          <div style="display: flex; flex-direction: column; gap: 5px; font-weight: 900; margin-bottom: 5px;">
             <label> ( &nbsp;&nbsp; ) عذره/ا مقبول </label>
             <label> ( &nbsp;&nbsp; ) عذره/ا غير مقبول ويحسم عليه/ا </label>
           </div>
@@ -233,6 +233,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
+        <div class="footer-notice">* ملاحظة : ترفق بطاقة المسائلة مع أصل القرار في حالة عدم قبول العذر لحفظها بملفه بالإدارة ، أصله لملفه بالمدرسة.</div>
     </div>`;
 };
 
@@ -263,7 +264,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </div>
 
         <div style="display: flex; align-items: center; margin-bottom: 8px;">
-           <div style="background: #336655; color: white; padding: 3px 10px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8.5pt;">السجل المدني</div>
+           <div style="background: #336655; color: white; padding: 2px 8px; font-weight: 900; border: 1.2px solid black; border-left: none; font-size: 8pt;">السجل المدني</div>
            <div class="civil-id-box" style="border: 1.2px solid black; padding: 2px; background: #eee;">${civilIdHtml}</div>
         </div>
 
@@ -285,27 +286,27 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
               <td>${employee.level || '---'}</td>
               <td>${employee.grade || '---'}</td>
               <td>${employee.employeeCode || '---'}</td>
-              <td style="font-size: 11pt; font-weight: 900;">${report.daysCount || '1'}</td>
+              <td style="font-size: 10pt; font-weight: 900;">${report.daysCount || '1'}</td>
             </tr>
           </tbody>
         </table>
 
-        <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 6px; text-align: center; font-weight: 900; font-size: 9.5pt; margin-bottom: 12px;">
+        <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 5px; text-align: center; font-weight: 900; font-size: 9pt; margin-bottom: 8px;">
           إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date}</span>) تغيبت/تغيبت عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date}</span>)
         </div>
 
-        <div style="border: 1px solid #000; padding: 10px; margin-bottom: 8px;">
+        <div style="border: 1px solid #000; padding: 8px; margin-bottom: 5px;">
           <div class="section-label">(1) طلب الإفادة :</div>
           <div class="signature-row">
             <span>الأستاذ/ة : <span class="dynamic-data" style="border-bottom: 1.5px solid black; padding: 0 10px;">${employee.name}</span></span>
             <span>وفقه/ا الله</span>
           </div>
-          <div style="margin-bottom: 5px; font-weight: bold;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</div>
-          <p style="text-align: justify; margin: 5px 0; font-weight: 700;">من خلال متابعة سجل الدوام تبين غيابكم خلال الفترة الموضحة أعلاه ، نأمل الإفادة عن أسباب ذلك وتقديم ما يؤيد عذركم خلال أسبوع من تاريخه.</p>
+          <div style="margin-bottom: 3px; font-weight: bold;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</div>
+          <p style="text-align: justify; margin: 4px 0; font-weight: 700;">من خلال متابعة سجل الدوام تبين غيابكم خلال الفترة الموضحة أعلاه ، نأمل الإفادة عن أسباب ذلك وتقديم ما يؤيد عذركم خلال أسبوع من تاريخه.</p>
           
-          ${report.notes ? `<div class="notes-box"><b>ملاحظة إضافية من الإدارة:</b> ${report.notes}</div>` : ''}
+          ${report.notes ? `<div class="notes-box"><b>ملاحظات الإدارة:</b> ${report.notes}</div>` : ''}
 
-          <div class="signature-row" style="margin-top: 10px;">
+          <div class="signature-row" style="margin-top: 8px;">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
             <span>تاريخ الطلب: <span class="dynamic-data">${report.date}</span></span>
@@ -314,35 +315,45 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
 
         <div class="divider"></div>
 
-        <div style="border: 1px solid #000; padding: 10px; margin-bottom: 8px;">
+        <div style="border: 1px solid #000; padding: 8px; margin-bottom: 5px;">
           <div class="section-label">(2) الإفادة :</div>
           <div class="signature-row">
             <span>المكرم/ة مدير/ة المدرسة / <span class="dynamic-data">${principalName}</span></span>
             <span>وفقه/ا الله</span>
           </div>
-          <p style="margin: 3px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 32px;"></div>
-          <div style="border-bottom: 1px dotted black; height: 32px;"></div>
-          <div class="signature-row" style="margin-top: 10px;">
+          <p style="margin: 2px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
+          <div style="border-bottom: 1px dotted black; height: 28px;"></div>
+          <div style="border-bottom: 1px dotted black; height: 28px;"></div>
+          <div class="signature-row" style="margin-top: 8px;">
             <span style="width: 55%;">الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: .................</span>
             <span>تاريخ الإفادة: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
 
-        <div style="border: 2px solid #000; padding: 10px; background: #fafafa;">
+        <div style="border: 2px solid #000; padding: 8px; background: #fafafa;">
           <div class="section-label">(3) قرار مدير/ة المدرسة :</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; font-weight: 900;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 5px 0; font-weight: 900;">
             <div>❑ تحتسب له/ا إجازة مرضية</div>
             <div>❑ تحتسب له/ا إجازة وفاة</div>
             <div>❑ تحتسب له/ا إجازة مرافقة</div>
             <div>❑ يعتمد الحسم لعدم قبول العذر</div>
           </div>
-          <div class="signature-row" style="margin-top: 10px;">
+          <div class="signature-row" style="margin-top: 8px;">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
             <span>تاريخ القرار: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
+        </div>
+
+        <div class="important-notes">
+          <div class="important-notes-title">ملاحظات هامة:</div>
+          <ol class="important-notes-list">
+            <li>تستكمل الاستمارة من المدير المباشر وإصدار القرار بموجبه.</li>
+            <li>إذا سبق عطلة نهاية الأسبوع غياب وألحقها غياب تحتسب مدة الغياب كاملة.</li>
+            <li>يجب أن يوضح المتغيب أسباب غيابه فور تسلمه الاستمارة ويعيدها لمدير المباشر.</li>
+            <li>يعطى المتغيب مدة أسبوع لتقديم ما يفيد عذره فإذا انقضت المدة الزمنية تستكمل الاستمارة ويتم الحسم.</li>
+          </ol>
         </div>
     </div>`;
 };
@@ -449,7 +460,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
     
     if (pageIdx === pages.length - 1) {
       pageContent += `
-        <div class="signature-section">
+        <div class="signature-section" style="margin-top: 15px; display: flex; justify-content: space-between; font-weight: 900;">
           <div style="text-align: center;">
             <p>معد التقرير</p>
             <p>................................</p>
@@ -527,7 +538,7 @@ export const generateEmployeePDF = async (employee: Employee, reports: Report[])
         <thead><tr><th>التاريخ</th><th>النوع</th><th>التفاصيل</th><th>الملاحظات</th></tr></thead>
         <tbody>${reportRows}</tbody>
       </table>
-      <div class="signature-section">
+      <div class="signature-section" style="margin-top: 15px; display: flex; justify-content: space-between; font-weight: 900;">
         <div style="text-align:center;"><p>مدير/ة المدرسة</p><p>${principalName}</p></div>
       </div>
     </div></body></html>`;
