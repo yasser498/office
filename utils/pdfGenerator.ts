@@ -13,6 +13,11 @@ const getArabicDayName = (dateString: string): string => {
   }
 };
 
+// كشف ما إذا كان المستخدم يستخدم جهاز جوال
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 const printContent = (htmlContent: string) => {
   const oldFrame = document.getElementById('print-iframe');
   if (oldFrame) document.body.removeChild(oldFrame);
@@ -30,17 +35,50 @@ const printContent = (htmlContent: string) => {
   const doc = iframe.contentWindow?.document;
   if (doc) {
     doc.open();
-    // إضافة كود JS داخل الإطار لانتظار تحميل الصور
-    const injectedHTML = htmlContent.replace('</body>', `
+    
+    // إضافة كود JS لانتظار تحميل الصور وتطبيق مقياس الرسم 75% للجوال
+    const isMobile = isMobileDevice();
+    const scaleStyle = isMobile ? 'body { zoom: 75%; }' : '';
+    
+    const injectedHTML = htmlContent.replace('</head>', `
+      <style>${scaleStyle}</style>
+      </head>
+    `).replace('</body>', `
       <script>
         window.onload = function() {
-          setTimeout(() => {
-            window.focus();
-            window.print();
-          }, 200);
+          // التأكد من تحميل الشعار تماماً
+          const images = document.getElementsByTagName('img');
+          let loadedCount = 0;
+          if (images.length === 0) {
+             startPrint();
+          } else {
+            for (let img of images) {
+              if (img.complete) {
+                loadedCount++;
+                if (loadedCount === images.length) startPrint();
+              } else {
+                img.onload = () => {
+                  loadedCount++;
+                  if (loadedCount === images.length) startPrint();
+                };
+                img.onerror = () => {
+                  loadedCount++;
+                  if (loadedCount === images.length) startPrint();
+                };
+              }
+            }
+          }
+          
+          function startPrint() {
+            setTimeout(() => {
+              window.focus();
+              window.print();
+            }, 300);
+          }
         };
       </script>
     </body>`);
+    
     doc.write(injectedHTML);
     doc.close();
   }
@@ -48,16 +86,70 @@ const printContent = (htmlContent: string) => {
 
 const getCommonStyles = () => `
   @page { size: A4; margin: 0; }
-  body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; font-size: 9pt; }
-  .page-container { width: 190mm; margin: 10mm auto; min-height: 277mm; display: flex; flex-direction: column; position: relative; box-sizing: border-box; padding: 5mm; }
+  body { 
+    font-family: 'Cairo', sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    color: #000; 
+    -webkit-print-color-adjust: exact; 
+    font-size: 9pt; 
+    width: 100%;
+  }
+  .page-container { 
+    width: 190mm; 
+    margin: 10mm auto; 
+    min-height: 277mm; 
+    display: flex; 
+    flex-direction: column; 
+    position: relative; 
+    box-sizing: border-box; 
+    padding: 5mm; 
+    background: white;
+  }
   .page-break { page-break-after: always; height: 0; }
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; }
-  .header-info { width: 33.33%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
-  .logo-container { width: 33.33%; text-align: center; display: flex; justify-content: center; align-items: center; }
-  .logo-container img { max-width: 105px; height: auto; display: block; }
-  .header-left { width: 33.33%; text-align: left; font-weight: bold; }
+  .header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    width: 100%; 
+    height: 100px;
+  }
+  .header-info { 
+    flex: 1;
+    font-size: 9pt; 
+    font-weight: bold; 
+    line-height: 1.6; 
+    text-align: right; 
+  }
+  .logo-container { 
+    flex: 1;
+    text-align: center; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+  }
+  .logo-container img { 
+    max-width: 110px; 
+    height: auto; 
+    display: block;
+    margin: 0 auto;
+  }
+  .header-left { 
+    flex: 1;
+    text-align: left; 
+    font-weight: bold; 
+    font-size: 9pt;
+  }
   .title-section { text-align: center; margin-bottom: 15px; width: 100%; }
-  .title-section h1 { font-size: 13pt; margin: 0; font-weight: 900; border-bottom: 2px solid black; display: inline-block; padding-bottom: 4px; }
+  .title-section h1 { 
+    font-size: 13pt; 
+    margin: 0; 
+    font-weight: 900; 
+    border-bottom: 2px solid black; 
+    display: inline-block; 
+    padding-bottom: 4px; 
+  }
   .data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
   .data-table th, .data-table td { border: 1px solid black; padding: 6px; text-align: center; font-size: 9pt; font-weight: bold; }
   .data-table th { background: #f2f2f2; color: #000; }
@@ -146,7 +238,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           </div>
         </div>
 
-        <div class="pdf-section-title">ثانياً: قائمة الموظفين الأكثر تسجيلاً (قائمة المتابعة)</div>
+        <div class="pdf-section-title">ثانياً: قائمة الموظفين الأكثر تسجيلاً</div>
         <table class="data-table">
           <thead>
             <tr>
@@ -161,7 +253,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           </tbody>
         </table>
 
-        <div class="pdf-section-title">ثالثاً: النشاط الشهري (توزيع السجلات)</div>
+        <div class="pdf-section-title">ثالثاً: التوزيع الشهري</div>
         <table class="data-table" style="width: 50%; margin-right: 0;">
           <thead>
             <tr>

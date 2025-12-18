@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3 } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
 import HistoryList from './components/HistoryList';
 import DailyLog from './components/DailyLog';
 import StatisticsView from './components/StatisticsView';
+import EmployeeManualForm from './components/EmployeeManualForm';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
 
 const App: React.FC = () => {
-  const { employees, loading, importEmployees, getReports, saveReport, removeReport, resetData, refresh } = useEmployeeDB();
+  const { employees, loading, importEmployees, addManualEmployee, getReports, saveReport, removeReport, resetData, refresh } = useEmployeeDB();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [employeeReports, setEmployeeReports] = useState<Report[]>([]);
   const [allReports, setAllReports] = useState<Report[]>([]);
@@ -20,6 +21,7 @@ const App: React.FC = () => {
   const [schoolName, setSchoolName] = useState('');
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
+  const [isAddingEmployee, setIsAddingEmployee] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
   const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics'>('employees');
   
@@ -66,6 +68,15 @@ const App: React.FC = () => {
     if (viewMode === 'statistics') setViewMode('employees'); 
   };
 
+  const handleSelectAll = () => {
+    const allFilteredIds = filteredEmployees.map(e => e.id);
+    setSelectedIds(allFilteredIds);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds([]);
+  };
+
   const selectedEmployees = useMemo(() => 
     employees.filter(emp => selectedIds.includes(emp.id)), 
   [employees, selectedIds]);
@@ -73,9 +84,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const loadReports = async () => {
       try {
-        if (selectedIds.length > 0) {
+        if (selectedIds.length === 1) {
           const reports = await getReports(selectedIds[0]);
           setEmployeeReports(reports);
+        } else if (selectedIds.length > 1) {
+          setEmployeeReports([]); // لا نعرض السجل الفردي عند اختيار أكثر من موظف
         } else {
           setEmployeeReports([]);
         }
@@ -101,10 +114,32 @@ const App: React.FC = () => {
     }
   };
 
-  const handleStartEditing = () => {
-    if (selectedEmployees.length === 1) {
-      setTempEmployeeData({ ...selectedEmployees[0] });
-      setIsEditingEmployee(true);
+  const handleAddManualEmployee = async (data: Omit<Employee, 'id'>) => {
+    try {
+      await addManualEmployee(data);
+    } catch (error) {
+      console.error('Failed to add employee:', error);
+    }
+  };
+
+  const handleStartEditing = (employee: Employee) => {
+    setTempEmployeeData({ ...employee });
+    setIsEditingEmployee(true);
+    setSelectedIds([employee.id]);
+    setViewMode('employees');
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  };
+
+  const handleDeleteEmployee = async (employee: Employee) => {
+    if (window.confirm(`هل أنت متأكد من حذف الموظف "${employee.name}"؟ سيؤدي ذلك لحذف كافة تقاريره ومساءلاته نهائياً.`)) {
+      try {
+        await dbUtils.deleteEmployee(employee.id);
+        setSelectedIds(prev => prev.filter(id => id !== employee.id));
+        await refresh();
+        await refreshAllReports();
+      } catch (error) {
+        console.error('Failed to delete employee:', error);
+      }
     }
   };
 
@@ -118,7 +153,7 @@ const App: React.FC = () => {
       };
       await saveReport(reportWithSettings);
       await refreshAllReports();
-      if (selectedIds.includes(employeeId)) {
+      if (selectedIds.includes(employeeId) && selectedIds.length === 1) {
         const updatedReports = await getReports(selectedIds[0]);
         setEmployeeReports(updatedReports);
       }
@@ -154,7 +189,8 @@ const App: React.FC = () => {
     return employees.filter(emp => 
       emp.name.toLowerCase().includes(lowerQuery) ||
       emp.civilId?.toLowerCase().includes(lowerQuery) ||
-      emp.workplace?.toLowerCase().includes(lowerQuery)
+      emp.workplace?.toLowerCase().includes(lowerQuery) ||
+      emp.employeeCode?.toLowerCase().includes(lowerQuery)
     );
   }, [employees, searchQuery]);
 
@@ -178,7 +214,7 @@ const App: React.FC = () => {
               <UserCog size={16} className="text-indigo-300" />
               <input type="text" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} placeholder="اسم المدير..." className="bg-transparent border-none text-sm outline-none w-full" />
             </div>
-            <button onClick={handleSaveSettings} className={`p-2 rounded-xl transition-all ${isSettingsSaved ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}>
+            <button onClick={handleSaveSettings} title="حفظ الإعدادات" className={`p-2 rounded-xl transition-all ${isSettingsSaved ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-500 text-white'}`}>
               {isSettingsSaved ? <CheckCircle size={20} /> : <Save size={20} />}
             </button>
           </div>
@@ -221,6 +257,31 @@ const App: React.FC = () => {
                   <Users size={20} className="text-indigo-600" />
                   قائمة الموظفين
                 </div>
+                <button 
+                  onClick={() => setIsAddingEmployee(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-black shadow-md transition-all active:scale-95"
+                >
+                  <UserPlus size={14} />
+                  إضافة موظف
+                </button>
+              </div>
+
+              {/* شريط أدوات التحديد */}
+              <div className="flex gap-2 mb-4">
+                <button 
+                  onClick={handleSelectAll}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 border border-slate-200 hover:border-indigo-200 py-2 rounded-xl text-[10px] font-black transition-all"
+                >
+                  <UserPlus size={14} />
+                  تحديد الكل
+                </button>
+                <button 
+                  onClick={handleDeselectAll}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 py-2 rounded-xl text-[10px] font-black transition-all"
+                >
+                  <XCircle size={14} />
+                  إلغاء التحديد
+                </button>
               </div>
 
               <div className="relative mb-4">
@@ -231,26 +292,61 @@ const App: React.FC = () => {
               <div className="overflow-y-auto flex-1 custom-scrollbar space-y-2 pr-1">
                 {loading ? (
                   <div className="py-20 text-center animate-pulse text-slate-400">جاري التحميل...</div>
-                ) : filteredEmployees.map((emp) => (
-                  <button
-                    key={emp.id}
-                    onClick={() => toggleEmployeeSelection(emp.id)}
-                    className={`w-full text-right p-4 rounded-xl transition-all flex items-center gap-3 border-2 ${
-                      selectedIds.includes(emp.id) 
-                        ? 'bg-indigo-50 border-indigo-200 text-indigo-800 shadow-sm' 
-                        : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className={`${selectedIds.includes(emp.id) ? 'text-indigo-600' : 'text-slate-300'}`}>
-                      {selectedIds.includes(emp.id) ? <CheckSquare size={20} /> : <Square size={20} />}
+                ) : filteredEmployees.length === 0 ? (
+                  <div className="py-10 text-center text-slate-300 text-sm font-bold">لا توجد نتائج</div>
+                ) : filteredEmployees.map((emp) => {
+                  const isSelected = selectedIds.includes(emp.id);
+                  return (
+                    <div
+                      key={emp.id}
+                      className={`group relative w-full text-right p-3 rounded-xl transition-all flex items-center gap-3 border-2 ${
+                        isSelected 
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-800 shadow-sm' 
+                          : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <button 
+                        onClick={() => toggleEmployeeSelection(emp.id)}
+                        className={`flex items-center gap-3 flex-1 text-right`}
+                      >
+                        <div className={`${isSelected ? 'text-indigo-600' : 'text-slate-300'}`}>
+                          {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                        </div>
+                        <div className="flex flex-col flex-1 truncate">
+                          <span className="font-bold text-sm truncate">{emp.name}</span>
+                          <span className="text-[10px] opacity-70 font-mono tracking-wide">{emp.civilId || 'بدون سجل'}</span>
+                        </div>
+                      </button>
+                      
+                      {/* أزرار التحكم الفردية للموظف */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleStartEditing(emp); }}
+                          title="تعديل الموظف"
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-all"
+                        >
+                          <Edit3 size={14} />
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteEmployee(emp); }}
+                          title="حذف الموظف"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-lg transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-col flex-1">
-                      <span className="font-bold text-[15px]">{emp.name}</span>
-                      <span className="text-[11px] opacity-70 font-mono tracking-wide">{emp.civilId || 'بدون سجل'}</span>
-                    </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
+              
+              {selectedIds.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+                  <span className="bg-indigo-600 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">
+                    {selectedIds.length} مختار
+                  </span>
+                </div>
+              )}
             </div>
           </aside>
 
@@ -267,7 +363,7 @@ const App: React.FC = () => {
                       <User size={64} className="opacity-20" />
                     </div>
                     <h2 className="text-2xl font-black text-slate-400">ابدأ باختيار موظف أو أكثر</h2>
-                    <p className="mt-2 text-slate-400 max-w-xs">اختر الأسماء من القائمة الجانبية لإجراء الحالات أو عرض التاريخ</p>
+                    <p className="mt-2 text-slate-400 max-w-xs">اختر الأسماء من القائمة الجانبية لإجراء الحالات أو عرض السجل</p>
                   </div>
                 ) : (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
@@ -276,7 +372,7 @@ const App: React.FC = () => {
                       
                       {selectedEmployees.length === 1 && (
                         <button 
-                          onClick={handleStartEditing} 
+                          onClick={() => handleStartEditing(selectedEmployees[0])} 
                           className="absolute left-6 top-6 p-2.5 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-sm border border-indigo-100"
                           title="تعديل بيانات الموظف"
                         >
@@ -286,14 +382,19 @@ const App: React.FC = () => {
 
                       {isEditingEmployee && tempEmployeeData ? (
                         <form onSubmit={handleUpdateEmployee} className="space-y-5 pt-4">
+                          <div className="flex items-center gap-2 mb-2 text-indigo-600 font-black">
+                            <Edit3 size={20} />
+                            <span>تعديل بيانات الموظف</span>
+                          </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="space-y-1.5">
                               <label className="text-xs font-black text-slate-400 uppercase tracking-widest">الاسم الكامل</label>
                               <input 
                                 type="text" 
+                                required
                                 value={tempEmployeeData.name} 
                                 onChange={(e) => setTempEmployeeData({...tempEmployeeData, name: e.target.value})}
-                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-400 outline-none transition-all" 
                               />
                             </div>
                             <div className="space-y-1.5">
@@ -302,7 +403,7 @@ const App: React.FC = () => {
                                 type="text" 
                                 value={tempEmployeeData.civilId || ''} 
                                 onChange={(e) => setTempEmployeeData({...tempEmployeeData, civilId: e.target.value})}
-                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-400 outline-none transition-all" 
                               />
                             </div>
                             <div className="space-y-1.5">
@@ -311,7 +412,7 @@ const App: React.FC = () => {
                                 type="text" 
                                 value={tempEmployeeData.specialization || ''} 
                                 onChange={(e) => setTempEmployeeData({...tempEmployeeData, specialization: e.target.value})}
-                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-400 outline-none transition-all" 
                               />
                             </div>
                             <div className="space-y-1.5">
@@ -320,24 +421,24 @@ const App: React.FC = () => {
                                 type="text" 
                                 value={tempEmployeeData.employeeCode || ''} 
                                 onChange={(e) => setTempEmployeeData({...tempEmployeeData, employeeCode: e.target.value})}
-                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2 text-sm font-bold focus:border-indigo-400 outline-none" 
+                                className="w-full border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm font-bold focus:border-indigo-400 outline-none transition-all" 
                               />
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <button type="submit" className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg">حفظ التعديلات</button>
-                            <button type="button" onClick={() => { setIsEditingEmployee(false); setTempEmployeeData(null); }} className="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold">إلغاء</button>
+                            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all active:scale-95">حفظ التعديلات</button>
+                            <button type="button" onClick={() => { setIsEditingEmployee(false); setTempEmployeeData(null); }} className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-3 rounded-xl font-bold transition-all">إلغاء</button>
                           </div>
                         </form>
                       ) : (
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                           <div>
                             <div className="flex items-center gap-3 mb-2">
-                               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl">
+                               <div className="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-lg shadow-indigo-100">
                                 {selectedEmployees.length}
                                </div>
-                               <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-                                {selectedEmployees.length === 1 ? selectedEmployees[0].name : 'إجراء جماعي للمجموعة مختارة'}
+                               <h2 className="text-3xl font-black text-slate-800 tracking-tight truncate max-w-md">
+                                {selectedEmployees.length === 1 ? selectedEmployees[0].name : 'إجراء جماعي للمجموعة'}
                                </h2>
                             </div>
                             <div className="flex flex-wrap gap-3 mt-3">
@@ -347,7 +448,7 @@ const App: React.FC = () => {
                                   <span className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-xl text-sm font-bold border border-indigo-100">السجل: {selectedEmployees[0].civilId}</span>
                                 </>
                               ) : (
-                                <p className="text-slate-500 font-bold">سيتم تطبيق التقرير على {selectedEmployees.length} أسماء مختارة.</p>
+                                <p className="text-slate-500 font-bold">سيتم تطبيق التقرير على {selectedEmployees.length} موظفين في وقت واحد.</p>
                               )}
                             </div>
                           </div>
@@ -356,7 +457,9 @@ const App: React.FC = () => {
                     </div>
 
                     <ReportForm selectedEmployees={selectedEmployees} onSave={handleSaveReportBatch} editingReport={editingReport} onCancelEdit={() => setEditingReport(null)} />
-                    <HistoryList reports={employeeReports} selectedEmployee={selectedEmployees[0]} onDeleteReport={handleDeleteReport} onEditReport={handleEditReport} />
+                    {selectedIds.length === 1 && (
+                      <HistoryList reports={employeeReports} selectedEmployee={selectedEmployees[0]} onDeleteReport={handleDeleteReport} onEditReport={handleEditReport} />
+                    )}
                   </div>
                 )}
               </>
@@ -364,6 +467,14 @@ const App: React.FC = () => {
           </section>
         </div>
       </main>
+
+      {/* نافذة إضافة موظف جديد يدوياً */}
+      {isAddingEmployee && (
+        <EmployeeManualForm 
+          onSave={handleAddManualEmployee} 
+          onClose={() => setIsAddingEmployee(false)} 
+        />
+      )}
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }

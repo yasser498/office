@@ -20,6 +20,11 @@ export const initDB = async (): Promise<IDBPDatabase> => {
   });
 };
 
+export const addEmployee = async (employee: Omit<Employee, 'id'>) => {
+  const db = await initDB();
+  return db.add('employees', employee);
+};
+
 export const saveEmployees = async (employees: Omit<Employee, 'id'>[]) => {
   const db = await initDB();
   const tx = db.transaction('employees', 'readwrite');
@@ -34,6 +39,20 @@ export const saveEmployees = async (employees: Omit<Employee, 'id'>[]) => {
 export const updateEmployee = async (employee: Employee) => {
   const db = await initDB();
   return db.put('employees', employee);
+};
+
+export const deleteEmployee = async (employeeId: number) => {
+  const db = await initDB();
+  const tx = db.transaction(['employees', 'reports'], 'readwrite');
+  await tx.objectStore('employees').delete(employeeId);
+  const reportStore = tx.objectStore('reports');
+  const index = reportStore.index('employeeId');
+  let cursor = await index.openCursor(IDBKeyRange.only(employeeId));
+  while (cursor) {
+    await cursor.delete();
+    cursor = await cursor.continue();
+  }
+  await tx.done;
 };
 
 export const getAllEmployees = async (): Promise<Employee[]> => {

@@ -28,6 +28,11 @@ export const useEmployeeDB = () => {
     await fetchEmployees();
   };
 
+  const addManualEmployee = async (data: Omit<Employee, 'id'>) => {
+    await dbUtils.addEmployee(data);
+    await fetchEmployees();
+  };
+
   const getReports = async (employeeId: number) => {
     return await dbUtils.getReportsByEmployee(employeeId);
   };
@@ -53,6 +58,7 @@ export const useEmployeeDB = () => {
     employees,
     loading,
     importEmployees,
+    addManualEmployee,
     getReports,
     saveReport,
     removeReport,
