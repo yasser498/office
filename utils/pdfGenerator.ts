@@ -80,8 +80,8 @@ const getCommonStyles = () => `
   }
   .page-container:last-child { page-break-after: auto; }
   
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; width: 100%; height: 85px; }
-  .header-info { flex: 1; font-size: 9pt; font-weight: 700; line-height: 1.4; text-align: right; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; width: 100%; height: 95px; }
+  .header-info { flex: 1; font-size: 9pt; font-weight: 700; line-height: 1.3; text-align: right; }
   .logo-container { flex: 1; text-align: center; }
   .logo-container img { max-width: 90px; height: auto; }
   .header-left { flex: 1; text-align: left; font-weight: 700; font-size: 9pt; }
@@ -103,19 +103,24 @@ const getCommonStyles = () => `
   .civil-id-box { display: flex; direction: ltr; border: 1.5px solid black; padding: 2px; background: #eee; }
   .digit { width: 22px; height: 22px; border: 1px solid black; display: flex; align-items: center; justify-content: center; font-weight: 900; margin: 0 1px; background: white; font-size: 10pt; }
 
-  .signature-row { display: flex; justify-content: space-between; margin: 12px 0; font-weight: 900; font-size: 10pt; align-items: center; }
-  .divider { border-top: 1.5px solid #000; margin: 12px 0; }
+  .signature-row { display: flex; justify-content: space-between; margin: 10px 0; font-weight: 900; font-size: 10pt; align-items: center; }
+  .divider { border-top: 1.5px solid #000; margin: 10px 0; }
   .section-label { font-weight: 900; color: #000; text-decoration: underline; margin-bottom: 5px; font-size: 11pt; }
   .dynamic-data { font-weight: 900; border-bottom: 1px solid black; padding: 0 5px; }
+  
+  /* ملاحظات بحجم 8 */
   .notes-box { border: 1px dashed #444; padding: 8px; margin: 8px 0; font-size: 8pt; background: #fffcf0; }
   
   .important-notes { border: 1.5px solid black; padding: 8px; margin-top: 8px; font-size: 8pt; }
   .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 3px; }
   .important-notes-list { margin: 0; padding-right: 18px; font-weight: 700; }
 
-  .checkbox-list { display: flex; flex-direction: column; gap: 8px; font-weight: 900; font-size: 10pt; margin: 10px 0; }
+  .checkbox-list { display: flex; flex-direction: column; gap: 6px; font-weight: 900; margin: 8px 0; }
   .checkbox-item { display: flex; align-items: center; gap: 8px; }
-  .checkbox-square { width: 16px; height: 16px; border: 1.5px solid black; display: inline-block; }
+  .checkbox-square { width: 14px; height: 14px; border: 1.5px solid black; display: inline-block; shrink: 0; }
+  
+  /* حجم 7 لقرار الغياب */
+  .small-decision { font-size: 7pt !important; }
 `;
 
 const gt = (gender: 'boys' | 'girls', masc: string, fem: string) => gender === 'boys' ? masc : fem;
@@ -212,7 +217,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
           </div>
           <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-          <p style="font-weight: 700; margin-bottom: 8px;">أفيدكم أن أسباب ذلك هي :</p>
+          <p style="font-weight: 700; margin: 5px 0;">أفيدكم أن تأخري كان للأسباب التالية :</p>
           <div style="border-bottom: 1px dotted black; height: 35px; margin-bottom: 10px;"></div>
           <p style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
           
@@ -330,7 +335,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
 
         <div style="border: 2px solid #000; padding: 12px; background: #fafafa;">
           <div class="section-label">(3) قرار ${gt(gender, 'مدير المدرسة :', 'مديرة المدرسة :')}</div>
-          <div class="checkbox-list">
+          <div class="checkbox-list small-decision">
             <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة مرضية.</div>
             <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة وفاة.</div>
             <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب إجازة مرافقة.</div>
@@ -355,7 +360,6 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
     </div>`;
 };
 
-// الدوال المساعدة للطباعة
 export const generateExitPermit = async (employee: Employee, startTime?: string, endTime?: string, reason?: string) => {
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
@@ -453,7 +457,6 @@ export const generateWarningLetter = async (employee: Employee, warningLevel: st
       </div>
       <div class="title-section"><h1>خطاب إنذار (${warningLevel})</h1></div>
       <p style="font-weight: 900;">${gt(gender, 'المكرم الأستاذ:', 'المكرمة الأستاذة:')} ${employee.name}</p>
-      <p style="font-weight: 700; line-height: 2;">نظراً لتكرار الملاحظات بخصوص الانضباط...</p>
       <div class="signature-row" style="margin-top: 50px;">
         <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} ${principalName}</span>
         <span>التوقيع: .................</span>
@@ -465,17 +468,7 @@ export const generateWarningLetter = async (employee: Employee, warningLevel: st
 export const generateLateCumulativeLog = async (employee: Employee, reports: Report[]) => {
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const principalName = await dbUtils.getSetting('principalName') || '..........';
-  const html = `
-    <div class="page-container">
-      <div class="header">
-        <div class="header-info"><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
-        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-        <div class="header-left"></div>
-      </div>
-      <h1>سجل حصر التأخر التراكمي</h1>
-      <p>الموظف: ${employee.name}</p>
-    </div>`;
+  const html = `<div class="page-container"><h1>سجل حصر التأخر التراكمي</h1><p>الموظف: ${employee.name}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
@@ -483,15 +476,7 @@ export const generateAcknowledgmentLog = async (employees: Employee[]) => {
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
   const rows = employees.map((emp, idx) => `<tr><td>${idx+1}</td><td style="text-align:right;">${emp.name}</td><td>${emp.employeeCode}</td><td></td></tr>`).join('');
-  const html = `
-    <div class="page-container">
-      <div class="header">
-        <div class="header-info"><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
-        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-      </div>
-      <h1 style="text-align:center;">بيان التوقيع بالعلم</h1>
-      <table class="data-table"><thead><tr><th>م</th><th>الاسم</th><th>رقم الوظيفة</th><th>التوقيع</th></tr></thead><tbody>${rows}</tbody></table>
-    </div>`;
+  const html = `<div class="page-container"><h1>بيان التوقيع بالعلم</h1><table class="data-table"><thead><tr><th>م</th><th>الاسم</th><th>رقم الوظيفة</th><th>التوقيع</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
@@ -505,30 +490,11 @@ export const generateAppreciationCertificate = async (employee: Employee) => {
 };
 
 export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const html = `
-    <div class="page-container">
-      <div class="header">
-        <div class="header-info"><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
-        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-      </div>
-      <h1>التقرير الإحصائي العام</h1>
-      <p>إجمالي السجلات: ${stats.totalReports}</p>
-    </div>`;
+  const html = `<div class="page-container"><h1>التقرير الإحصائي العام</h1><p>إجمالي السجلات: ${stats.totalReports}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
 export const generateEmployeePDF = async (employee: Employee, reports: Report[]) => {
-  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const html = `
-    <div class="page-container">
-      <div class="header">
-        <div class="header-info"><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
-        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-      </div>
-      <h1>سجل الموظف</h1>
-      <p>${employee.name}</p>
-    </div>`;
+  const html = `<div class="page-container"><h1>سجل الموظف</h1><p>${employee.name}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
