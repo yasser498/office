@@ -1,5 +1,5 @@
 
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, Baby } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [principalName, setPrincipalName] = useState('');
   const [schoolName, setSchoolName] = useState('');
+  const [educationDept, setEducationDept] = useState('');
   const [schoolGender, setSchoolGender] = useState<'boys' | 'girls'>('boys');
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
@@ -31,6 +32,7 @@ const App: React.FC = () => {
   useEffect(() => {
     dbUtils.getSetting('principalName').then(name => { if (name) setPrincipalName(name); }).catch(console.error);
     dbUtils.getSetting('schoolName').then(name => { if (name) setSchoolName(name); }).catch(console.error);
+    dbUtils.getSetting('educationDept').then(dept => { if (dept) setEducationDept(dept); }).catch(console.error);
     dbUtils.getSetting('schoolGender').then(gender => { if (gender) setSchoolGender(gender); }).catch(console.error);
     refreshAllReports();
   }, []);
@@ -48,6 +50,7 @@ const App: React.FC = () => {
     try {
       await dbUtils.setSetting('principalName', principalName);
       await dbUtils.setSetting('schoolName', schoolName);
+      await dbUtils.setSetting('educationDept', educationDept);
       await dbUtils.setSetting('schoolGender', schoolGender);
       setIsSettingsSaved(true);
       setTimeout(() => setIsSettingsSaved(false), 2000);
@@ -215,6 +218,10 @@ const App: React.FC = () => {
           
           <div className="flex flex-wrap items-center gap-3 bg-indigo-900/40 p-4 rounded-[2rem] border border-white/10 w-full lg:w-auto backdrop-blur-sm">
             <div className="flex-1 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all min-w-[150px]">
+              <MapPin size={20} className="text-indigo-300" />
+              <input type="text" value={educationDept} onChange={(e) => setEducationDept(e.target.value)} placeholder="إدارة التعليم بـ..." className="bg-transparent border-none text-sm font-bold outline-none w-full placeholder:text-indigo-300/40" />
+            </div>
+            <div className="flex-1 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all min-w-[150px]">
               <School size={20} className="text-indigo-300" />
               <input type="text" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="اسم المدرسة..." className="bg-transparent border-none text-sm font-bold outline-none w-full placeholder:text-indigo-300/40" />
             </div>
@@ -223,7 +230,6 @@ const App: React.FC = () => {
               <input type="text" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} placeholder="اسم المدير..." className="bg-transparent border-none text-sm font-bold outline-none w-full placeholder:text-indigo-300/40" />
             </div>
 
-            {/* خيار نوع المدرسة (بنين / بنات) */}
             <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
               <button 
                 onClick={() => setSchoolGender('boys')}
