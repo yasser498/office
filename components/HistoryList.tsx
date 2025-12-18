@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Report, Employee } from '../types';
-import { History, Download, FileCheck, AlertCircle, Clock, Edit2, Trash2, FileText, Award, AlertTriangle, LogOut } from 'lucide-react';
+import { History, Download, FileCheck, AlertCircle, Clock, Edit2, Trash2, FileText, Award, AlertTriangle, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { 
   generateOfficialAbsenceForm, 
   generateEmployeePDF, 
@@ -20,27 +20,15 @@ interface HistoryListProps {
 }
 
 const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, onDeleteReport, onEditReport }) => {
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'غياب': return 'bg-rose-100 text-rose-700 border-rose-200';
-      case 'تأخر_انصراف': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'إذن_خروج': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'خطاب_إنذار': return 'bg-red-100 text-red-700 border-red-200';
-      case 'شكر_وتقدير': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
-    }
-  };
+  
+  // فصل التقارير بناءً على النوع
+  const attendanceReports = useMemo(() => 
+    reports.filter(r => r.type === 'غياب' || r.type === 'تأخر_انصراف'),
+  [reports]);
 
-  const getTypeName = (type: string) => {
-    switch (type) {
-      case 'تأخر_انصراف': return 'تنبيه تأخر';
-      case 'غياب': return 'مساءلة غياب';
-      case 'إذن_خروج': return 'إذن خروج';
-      case 'خطاب_إنذار': return 'خطاب إنذار';
-      case 'شكر_وتقدير': return 'شكر وتقدير';
-      default: return type;
-    }
-  };
+  const administrativeReports = useMemo(() => 
+    reports.filter(r => r.type === 'إذن_خروج' || r.type === 'خطاب_إنذار' || r.type === 'شكر_وتقدير'),
+  [reports]);
 
   const handlePrint = (report: Report) => {
     switch(report.type) {
@@ -53,86 +41,125 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
   };
 
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-500">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
-            <History size={28} />
+    <div className="space-y-12 animate-in zoom-in-95 duration-500">
+      {/* 1. سجل الحضور والانضباط اليومي */}
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+              <CalendarCheck size={28} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-black text-slate-800">سجل الحضور والغياب</h3>
+              <p className="text-xs text-slate-400 font-bold">متابعة الغيابات وتأخر الدوام الرسمي</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-2xl font-black text-slate-800">سجل الانضباط الفردي</h3>
-            <p className="text-xs text-slate-400 font-bold">إدارة التقارير والمساءلات المسجلة للموظف</p>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2">
+          
           <button
             onClick={() => generateLateCumulativeLog(selectedEmployee, reports)}
-            className="flex items-center gap-2 bg-amber-50 text-amber-600 px-5 py-2.5 rounded-2xl font-black text-sm hover:bg-amber-100 transition-all border border-amber-100 shadow-sm"
+            className="flex items-center gap-2 bg-amber-50 text-amber-600 px-6 py-3 rounded-2xl font-black text-sm hover:bg-amber-100 transition-all border border-amber-100 shadow-sm"
           >
             <Clock size={18} />
-            سجل حصر التأخر
-          </button>
-          <button
-            onClick={() => generateEmployeePDF(selectedEmployee, reports)}
-            className="flex items-center gap-2 bg-slate-800 text-white px-5 py-2.5 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl"
-          >
-            <Download size={18} />
-            تحميل السجل
+            توليد سجل حصر التأخر
           </button>
         </div>
+
+        {attendanceReports.length === 0 ? (
+          <div className="py-10 text-center text-slate-300 font-bold italic">لا توجد غيابات مسجلة</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right border-collapse">
+              <thead>
+                <tr className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                  <th className="p-4 rounded-r-xl">التاريخ</th>
+                  <th className="p-4">النوع</th>
+                  <th className="p-4">المدة / الحضور</th>
+                  <th className="p-4 text-center rounded-l-xl">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {attendanceReports.map((report) => (
+                  <tr key={report.id} className="text-slate-700 hover:bg-slate-50/80 transition-colors">
+                    <td className="p-4 font-mono font-bold">{report.date}</td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black border ${report.type === 'غياب' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                        {report.type === 'غياب' ? 'مساءلة غياب' : 'تنبيه تأخر'}
+                      </span>
+                    </td>
+                    <td className="p-4 font-bold text-sm">
+                      {report.type === 'غياب' ? `${report.daysCount} أيام` : `الحضور: ${report.lateArrivalTime}`}
+                    </td>
+                    <td className="p-4 flex justify-center gap-2">
+                      <button onClick={() => handlePrint(report)} className="bg-indigo-600 text-white px-4 py-1.5 rounded-xl hover:bg-indigo-700 text-[10px] font-black flex items-center gap-2 shadow-lg"><FileCheck size={14}/> طباعة</button>
+                      <button onClick={() => onEditReport(report)} className="p-2 text-slate-400 hover:text-indigo-600"><Edit2 size={16}/></button>
+                      <button onClick={() => report.id && onDeleteReport(report.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={16}/></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {reports.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-slate-300 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-100">
-          <AlertCircle size={48} className="mb-4 opacity-20" />
-          <p className="font-black text-lg">لا توجد سجلات حالية لهذا الموظف</p>
+      {/* 2. سجل الإجراءات الإدارية والتقديرية */}
+      <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-emerald-50 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-32 h-32 bg-emerald-50 rounded-full -ml-16 -mt-16 opacity-40"></div>
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
+                <ShieldCheck size={28} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-800">السجل الإداري والتقديري</h3>
+                <p className="text-xs text-slate-400 font-bold">أذونات الخروج، الإنذارات الرسمية، شهادات الشكر</p>
+              </div>
+            </div>
+          </div>
+
+          {administrativeReports.length === 0 ? (
+            <div className="py-10 text-center text-slate-300 font-bold italic">لا توجد إجراءات إدارية مسجلة</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-right border-collapse">
+                <thead>
+                  <tr className="bg-emerald-50/50 text-emerald-700 text-[10px] font-black uppercase tracking-widest">
+                    <th className="p-4 rounded-r-xl">التاريخ</th>
+                    <th className="p-4">نوع المستند</th>
+                    <th className="p-4">البيان</th>
+                    <th className="p-4 text-center rounded-l-xl">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-emerald-50">
+                  {administrativeReports.map((report) => (
+                    <tr key={report.id} className="text-slate-700 hover:bg-emerald-50/30 transition-colors">
+                      <td className="p-4 font-mono font-bold">{report.date}</td>
+                      <td className="p-4">
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black border ${
+                          report.type === 'إذن_خروج' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                          report.type === 'خطاب_إنذار' ? 'bg-red-50 text-red-600 border-red-100' : 
+                          'bg-amber-50 text-amber-600 border-amber-100'
+                        }`}>
+                          {report.type === 'إذن_خروج' ? 'إذن خروج' : report.type === 'خطاب_إنذار' ? 'إنذار رسمي' : 'شكر وتقدير'}
+                        </span>
+                      </td>
+                      <td className="p-4 font-bold text-sm">
+                        {report.type === 'إذن_خروج' ? `من ${report.lateArrivalTime} لـ ${report.earlyDepartureTime}` : 
+                         report.type === 'خطاب_إنذار' ? `مستوى: ${report.warningLevel}` : 'شهادة تقدير'}
+                      </td>
+                      <td className="p-4 flex justify-center gap-2">
+                        <button onClick={() => handlePrint(report)} className="bg-emerald-600 text-white px-4 py-1.5 rounded-xl hover:bg-emerald-700 text-[10px] font-black flex items-center gap-2 shadow-lg"><FileCheck size={14}/> طباعة</button>
+                        <button onClick={() => report.id && onDeleteReport(report.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={16}/></button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-right border-collapse">
-            <thead>
-              <tr className="border-b border-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                <th className="pb-4 pr-4">التاريخ</th>
-                <th className="pb-4">النوع</th>
-                <th className="pb-4">التفاصيل</th>
-                <th className="pb-4 text-center">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {reports.map((report) => (
-                <tr key={report.id} className="text-slate-700 hover:bg-slate-50 transition-colors">
-                  <td className="py-5 pr-4 font-mono text-sm font-bold">{report.date}</td>
-                  <td className="py-5">
-                    <span className={`px-3 py-1 rounded-lg text-[10px] font-black border ${getTypeColor(report.type)}`}>
-                      {getTypeName(report.type)}
-                    </span>
-                  </td>
-                  <td className="py-5 text-sm font-bold max-w-xs truncate text-slate-600">
-                    {report.type === 'غياب' ? `${report.daysCount} أيام` : 
-                     report.type === 'تأخر_انصراف' ? `حضور: ${report.lateArrivalTime}` : 
-                     report.type === 'خطاب_إنذار' ? `إنذار ${report.warningLevel}` :
-                     report.type === 'إذن_خروج' ? `من ${report.lateArrivalTime} لـ ${report.earlyDepartureTime}` :
-                     report.notes}
-                  </td>
-                  <td className="py-5">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handlePrint(report)}
-                        className="flex items-center gap-2 text-white bg-indigo-600 px-4 py-1.5 rounded-xl hover:bg-indigo-700 transition-all shadow-lg text-[10px] font-black"
-                      >
-                        <FileCheck size={14} /> طباعة
-                      </button>
-                      <button onClick={() => onEditReport(report)} className="p-2 text-slate-400 hover:text-indigo-600"><Edit2 size={16} /></button>
-                      <button onClick={() => report.id && onDeleteReport(report.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

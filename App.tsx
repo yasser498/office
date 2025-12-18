@@ -1,8 +1,9 @@
 
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, MapPin, ShieldCheck } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
+import AdministrativeForm from './components/AdministrativeForm';
 import HistoryList from './components/HistoryList';
 import DailyLog from './components/DailyLog';
 import StatisticsView from './components/StatisticsView';
@@ -24,6 +25,7 @@ const App: React.FC = () => {
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
+  const [showAdminForm, setShowAdminForm] = useState(false);
   const [editingReport, setEditingReport] = useState<Report | null>(null);
   const [viewMode, setViewMode] = useState<'employees' | 'daily_log' | 'statistics'>('employees');
   
@@ -93,8 +95,6 @@ const App: React.FC = () => {
         if (selectedIds.length === 1) {
           const reports = await getReports(selectedIds[0]);
           setEmployeeReports(reports);
-        } else if (selectedIds.length > 1) {
-          setEmployeeReports([]); 
         } else {
           setEmployeeReports([]);
         }
@@ -183,6 +183,10 @@ const App: React.FC = () => {
   };
 
   const handleEditReport = (report: Report) => {
+    if (report.type === 'إذن_خروج' || report.type === 'خطاب_إنذار' || report.type === 'شكر_وتقدير') {
+      alert('يتم تعديل الإجراءات الإدارية بحذفها وإعادة إصدارها لضمان دقة القيد.');
+      return;
+    }
     setEditingReport(report);
     setSelectedIds([report.employeeId]);
     setViewMode('employees');
@@ -290,18 +294,38 @@ const App: React.FC = () => {
             </div>
 
             {viewMode === 'employees' && (
-              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-8 rounded-[2.5rem] shadow-xl border border-indigo-100 flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-indigo-600 text-white rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl shadow-indigo-200">
-                  <UserPlus size={40} />
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-8 rounded-[2.5rem] shadow-xl border border-indigo-100 flex flex-col items-center text-center">
+                  <div className="w-20 h-20 bg-indigo-600 text-white rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl shadow-indigo-200">
+                    <UserPlus size={40} />
+                  </div>
+                  <h4 className="text-xl font-black text-slate-800 mb-2">إضافة موظف؟</h4>
+                  <button 
+                    onClick={() => setIsAddingEmployee(true)}
+                    className="w-full bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-600 hover:text-white px-6 py-4 rounded-[1.8rem] font-black text-sm transition-all duration-300 shadow-lg active:scale-95"
+                  >
+                    إضافة يدوية
+                  </button>
                 </div>
-                <h4 className="text-xl font-black text-slate-800 mb-2">إضافة موظف جديد؟</h4>
-                <p className="text-slate-500 text-sm mb-6 font-bold leading-relaxed">يمكنك إضافة بيانات الموظف يدوياً دون الحاجة لملف إكسل.</p>
-                <button 
-                  onClick={() => setIsAddingEmployee(true)}
-                  className="w-full bg-white text-indigo-600 border-2 border-indigo-600 hover:bg-indigo-600 hover:text-white px-6 py-4 rounded-[1.8rem] font-black text-sm transition-all duration-300 shadow-lg active:scale-95"
-                >
-                  إضافة يدوية الآن
-                </button>
+
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-8 rounded-[2.5rem] shadow-xl border border-emerald-100 flex flex-col items-center text-center">
+                  <div className="w-20 h-20 bg-emerald-600 text-white rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl shadow-emerald-200">
+                    <ShieldCheck size={40} />
+                  </div>
+                  <h4 className="text-xl font-black text-slate-800 mb-2">إجراء إداري / شكر؟</h4>
+                  <button 
+                    onClick={() => {
+                       if (selectedIds.length === 0) {
+                          alert('الرجاء اختيار موظف واحد على الأقل من القائمة أولاً');
+                       } else {
+                          setShowAdminForm(true);
+                       }
+                    }}
+                    className="w-full bg-white text-emerald-600 border-2 border-emerald-600 hover:bg-emerald-600 hover:text-white px-6 py-4 rounded-[1.8rem] font-black text-sm transition-all duration-300 shadow-lg active:scale-95"
+                  >
+                    إصدار مستند رسمي
+                  </button>
+                </div>
               </div>
             )}
           </aside>
@@ -433,20 +457,19 @@ const App: React.FC = () => {
             <span className="text-sm font-black text-indigo-900">تم بواسطة ياسر الهذلي</span>
             <Heart size={16} className="text-rose-500 fill-rose-500 animate-pulse group-hover:scale-125 transition-transform" />
           </div>
-          
-          <div className="flex gap-4">
-             <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors">
-                <School size={20} />
-             </div>
-             <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors">
-                <Users size={20} />
-             </div>
-          </div>
         </div>
       </footer>
 
       {isAddingEmployee && (
         <EmployeeManualForm onSave={handleAddManualEmployee} onClose={() => setIsAddingEmployee(false)} />
+      )}
+
+      {showAdminForm && (
+        <AdministrativeForm 
+          selectedEmployees={selectedEmployees} 
+          onSave={handleSaveReportBatch} 
+          onClose={() => setShowAdminForm(false)} 
+        />
       )}
 
       {isEditingEmployee && tempEmployeeData && (
@@ -459,7 +482,6 @@ const App: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-black">تعديل بيانات الموظف</h3>
-                  <p className="text-xs text-indigo-200 font-bold">تحديث البيانات الأساسية للسجلات</p>
                 </div>
               </div>
               <button onClick={() => setIsEditingEmployee(false)} className="p-2 hover:bg-white/10 rounded-full transition-all">
@@ -476,42 +498,18 @@ const App: React.FC = () => {
                     <label className="text-sm font-black text-slate-700 mr-2">السجل المدني</label>
                     <input type="text" value={tempEmployeeData.civilId} onChange={(e) => setTempEmployeeData({...tempEmployeeData, civilId: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] outline-none focus:ring-4 focus:ring-indigo-100 font-bold transition-all" required />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-slate-700 mr-2">رقم الوظيفة</label>
-                    <input type="text" value={tempEmployeeData.employeeCode} onChange={(e) => setTempEmployeeData({...tempEmployeeData, employeeCode: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] outline-none focus:ring-4 focus:ring-indigo-100 font-bold transition-all" />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-slate-700 mr-2">العمل الحالي</label>
-                    <input type="text" value={tempEmployeeData.workplace} onChange={(e) => setTempEmployeeData({...tempEmployeeData, workplace: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-[1.5rem] outline-none focus:ring-4 focus:ring-indigo-100 font-bold transition-all" />
-                  </div>
                </div>
                <div className="flex gap-4 pt-6">
-                 <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-5 rounded-[2rem] font-black text-lg transition-all shadow-2xl shadow-indigo-100 active:scale-95 flex items-center justify-center gap-3">
+                 <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-5 rounded-[2rem] font-black text-lg transition-all shadow-2xl active:scale-95 flex items-center justify-center gap-3">
                     <Save size={24} />
                     حفظ التغييرات
                  </button>
-                 <button type="button" onClick={() => setIsEditingEmployee(false)} className="px-10 py-5 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-[2rem] font-black transition-all">إلغاء</button>
+                 <button type="button" onClick={() => setIsEditingEmployee(false)} className="px-10 py-5 bg-slate-100 text-slate-600 rounded-[2rem] font-black transition-all">إلغاء</button>
                </div>
             </form>
           </div>
         </div>
       )}
-      
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #cbd5e1;
-        }
-      `}</style>
     </div>
   );
 };
