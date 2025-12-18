@@ -112,9 +112,9 @@ const getCommonStyles = () => `
   .dynamic-data { font-weight: 900; color: #000; }
   .notes-box { border: 1px dashed #444; padding: 4px; margin: 4px 0; font-size: 8pt; background: #fffcf0; }
   .footer-notice { font-size: 8pt; font-weight: 900; margin-top: 5px; color: #000; }
-  .important-notes { margin-top: 10px; border: 1px solid black; padding: 8px; font-size: 8pt; }
-  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 4px; }
-  .important-notes-list { margin: 0; padding-right: 20px; font-weight: 700; }
+  .important-notes { margin-top: 8px; border: 1px solid black; padding: 6px; font-size: 7.5pt; }
+  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 2px; }
+  .important-notes-list { margin: 0; padding-right: 15px; font-weight: 700; }
 `;
 
 const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: string, principalName: string) => {
@@ -198,7 +198,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           <div class="signature-row">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144</span>
           </div>
         </div>
 
@@ -217,7 +217,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           <div class="signature-row" style="margin-top: 8px;">
             <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144</span>
           </div>
         </div>
 
@@ -230,7 +230,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           <div class="signature-row">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144</span>
           </div>
         </div>
         <div class="footer-notice">* ملاحظة : ترفق بطاقة المسائلة مع أصل القرار في حالة عدم قبول العذر لحفظها بملفه بالإدارة ، أصله لملفه بالمدرسة.</div>
@@ -327,22 +327,23 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
           <div class="signature-row" style="margin-top: 8px;">
             <span style="width: 55%;">الاسم: <span class="dynamic-data">${employee.name}</span></span>
             <span>التوقيع: .................</span>
-            <span>تاريخ الإفادة: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span>تاريخ الإفادة: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144</span>
           </div>
         </div>
 
         <div style="border: 2px solid #000; padding: 8px; background: #fafafa;">
           <div class="section-label">(3) قرار مدير/ة المدرسة :</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 5px 0; font-weight: 900;">
-            <div>❑ تحتسب له/ا إجازة مرضية</div>
-            <div>❑ تحتسب له/ا إجازة وفاة</div>
-            <div>❑ تحتسب له/ا إجازة مرافقة</div>
-            <div>❑ يعتمد الحسم لعدم قبول العذر</div>
+          <div style="display: flex; flex-direction: column; gap: 5px; margin: 5px 0; font-weight: 900; font-size: 8.5pt;">
+            <div>(...........) تحتسب له/ا إجازة مرضية بعد التأكد من نظامية التقرير.</div>
+            <div>(...........) تحتسب له/ا إجازة وفاة.</div>
+            <div>(...........) تحتسب له/ا إجازة مرافقة.</div>
+            <div>(...........) يحتسب غيابه/ا من رصيده/ا للإجازات الاضطرارية لقبول عذره/ا إذا كان رصيده/ا يسمح وإلا يحسم عليه/ا.</div>
+            <div>(...........) يعتمد الحسم لعدم قبول عذره/ا.</div>
           </div>
           <div class="signature-row" style="margin-top: 8px;">
             <span>مدير/ة المدرسة: <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
-            <span>تاريخ القرار: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+            <span>تاريخ القرار: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144</span>
           </div>
         </div>
 
