@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash } from 'lucide-react';
+import { Search, Users, User, ArrowRight, LayoutDashboard, Settings, CheckCircle, Save, School, UserCog, CheckSquare, Square, ClipboardList, BarChart3, UserMinus, UserPlus, Trash2, Edit3, XCircle, Heart, Sparkles, Hash, Baby } from 'lucide-react';
 import { useEmployeeDB } from './hooks/useEmployeeDB';
 import FileUpload from './components/FileUpload';
 import ReportForm from './components/ReportForm';
@@ -10,6 +9,7 @@ import StatisticsView from './components/StatisticsView';
 import EmployeeManualForm from './components/EmployeeManualForm';
 import { Employee, Report } from './types';
 import * as dbUtils from './utils/db';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const App: React.FC = () => {
   const { employees, loading, importEmployees, addManualEmployee, getReports, saveReport, removeReport, resetData, refresh } = useEmployeeDB();
@@ -19,6 +19,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [principalName, setPrincipalName] = useState('');
   const [schoolName, setSchoolName] = useState('');
+  const [schoolGender, setSchoolGender] = useState<'boys' | 'girls'>('boys');
   const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [isEditingEmployee, setIsEditingEmployee] = useState(false);
   const [isAddingEmployee, setIsAddingEmployee] = useState(false);
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   useEffect(() => {
     dbUtils.getSetting('principalName').then(name => { if (name) setPrincipalName(name); }).catch(console.error);
     dbUtils.getSetting('schoolName').then(name => { if (name) setSchoolName(name); }).catch(console.error);
+    dbUtils.getSetting('schoolGender').then(gender => { if (gender) setSchoolGender(gender); }).catch(console.error);
     refreshAllReports();
   }, []);
 
@@ -46,6 +48,7 @@ const App: React.FC = () => {
     try {
       await dbUtils.setSetting('principalName', principalName);
       await dbUtils.setSetting('schoolName', schoolName);
+      await dbUtils.setSetting('schoolGender', schoolGender);
       setIsSettingsSaved(true);
       setTimeout(() => setIsSettingsSaved(false), 2000);
     } catch (error) {
@@ -196,9 +199,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Header مع تصميم عصري */}
       <header className="bg-gradient-to-r from-indigo-800 via-indigo-700 to-blue-800 text-white shadow-2xl sticky top-0 z-40 border-b border-white/10 no-print">
-        <div className="max-w-7xl mx-auto px-4 h-auto lg:h-28 flex flex-col lg:flex-row items-center justify-between py-4 lg:py-0 gap-6">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center justify-between py-6 gap-6">
           <div className="flex items-center gap-5 group">
             <div className="bg-white/10 p-4 rounded-3xl group-hover:bg-white/20 transition-all duration-500 border border-white/20 shadow-xl">
               <Sparkles size={36} className="text-indigo-100 animate-pulse" />
@@ -211,17 +213,34 @@ const App: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-3 bg-indigo-900/40 p-3 rounded-[2rem] border border-white/10 w-full lg:w-auto backdrop-blur-sm">
-            <div className="flex-1 flex items-center gap-3 bg-white/5 px-5 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all">
+          <div className="flex flex-wrap items-center gap-3 bg-indigo-900/40 p-4 rounded-[2rem] border border-white/10 w-full lg:w-auto backdrop-blur-sm">
+            <div className="flex-1 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all min-w-[150px]">
               <School size={20} className="text-indigo-300" />
               <input type="text" value={schoolName} onChange={(e) => setSchoolName(e.target.value)} placeholder="اسم المدرسة..." className="bg-transparent border-none text-sm font-bold outline-none w-full placeholder:text-indigo-300/40" />
             </div>
-            <div className="flex-1 flex items-center gap-3 bg-white/5 px-5 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all">
+            <div className="flex-1 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/5 focus-within:border-white/20 transition-all min-w-[150px]">
               <UserCog size={20} className="text-indigo-300" />
               <input type="text" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} placeholder="اسم المدير..." className="bg-transparent border-none text-sm font-bold outline-none w-full placeholder:text-indigo-300/40" />
             </div>
-            <button onClick={handleSaveSettings} title="حفظ الإعدادات" className={`p-3.5 rounded-2xl transition-all shadow-xl active:scale-90 ${isSettingsSaved ? 'bg-emerald-500 text-white scale-110' : 'bg-indigo-600 hover:bg-white hover:text-indigo-700 text-white'}`}>
-              {isSettingsSaved ? <CheckCircle size={24} /> : <Save size={24} />}
+
+            {/* خيار نوع المدرسة (بنين / بنات) */}
+            <div className="flex bg-white/5 p-1 rounded-xl border border-white/5">
+              <button 
+                onClick={() => setSchoolGender('boys')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2 ${schoolGender === 'boys' ? 'bg-white text-indigo-700 shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              >
+                بنين
+              </button>
+              <button 
+                onClick={() => setSchoolGender('girls')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all flex items-center gap-2 ${schoolGender === 'girls' ? 'bg-white text-rose-600 shadow-lg' : 'text-indigo-200 hover:bg-white/5'}`}
+              >
+                بنات
+              </button>
+            </div>
+
+            <button onClick={handleSaveSettings} title="حفظ الإعدادات" className={`p-3 rounded-2xl transition-all shadow-xl active:scale-90 ${isSettingsSaved ? 'bg-emerald-500 text-white scale-110' : 'bg-indigo-600 hover:bg-white hover:text-indigo-700 text-white'}`}>
+              {isSettingsSaved ? <CheckCircle size={22} /> : <Save size={22} />}
             </button>
           </div>
         </div>
@@ -394,7 +413,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer احترافي وجميل */}
       <footer className="mt-auto bg-white border-t border-slate-100 py-10 no-print">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col items-center md:items-start gap-2">

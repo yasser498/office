@@ -1,9 +1,9 @@
 
-import React, { useMemo } from 'react';
 import { Report, Employee } from '../types';
-import { BarChart3, Users, AlertTriangle, CalendarDays, TrendingUp, UserMinus, Printer } from 'lucide-react';
+import { BarChart3, Users, AlertTriangle, CalendarDays, TrendingUp, TrendingDown, UserMinus, Printer, Zap } from 'lucide-react';
 import { generateStatisticsPDF } from '../utils/pdfGenerator';
 import * as dbUtils from '../utils/db';
+import React, { useMemo } from 'react';
 
 interface StatisticsViewProps {
   reports: Report[];
@@ -11,6 +11,8 @@ interface StatisticsViewProps {
 }
 
 const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) => {
+  const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
   const stats = useMemo(() => {
     const totalReports = reports.length;
     const absenceCount = reports.filter(r => r.type === 'غياب').length;
@@ -29,7 +31,7 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
       }))
       .filter(item => item.employee)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 40); // تم زيادة العدد من 5 إلى 40 لاختبار نظام العمودين وتعدد الصفحات
+      .slice(0, 40);
 
     // حساب التوزيع الشهري
     const monthlyData: Record<number, number> = {};
@@ -39,7 +41,33 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
       monthlyData[month] = (monthlyData[month] || 0) + 1;
     });
 
-    return { totalReports, absenceCount, lateCount, topEmployees, monthlyData };
+    // تحديد الشهر الأعلى والأقل
+    let maxVal = -1;
+    let minVal = Infinity;
+    let highestMonthIdx = -1;
+    let lowestMonthIdx = -1;
+
+    for (let i = 0; i < 12; i++) {
+      const val = monthlyData[i] || 0;
+      if (val > maxVal) {
+        maxVal = val;
+        highestMonthIdx = i;
+      }
+      if (val < minVal) {
+        minVal = val;
+        lowestMonthIdx = i;
+      }
+    }
+
+    return { 
+      totalReports, 
+      absenceCount, 
+      lateCount, 
+      topEmployees, 
+      monthlyData,
+      highestMonth: highestMonthIdx !== -1 ? { name: monthNames[highestMonthIdx], count: maxVal } : null,
+      lowestMonth: lowestMonthIdx !== -1 ? { name: monthNames[lowestMonthIdx], count: minVal } : null
+    };
   }, [reports, employees]);
 
   const handlePrintStats = async () => {
@@ -48,7 +76,6 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
     await generateStatisticsPDF(stats, schoolName, principalName);
   };
 
-  const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
   const maxMonthValue = Math.max(...(Object.values(stats.monthlyData) as number[]), 1);
 
   return (
@@ -98,6 +125,39 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
           </div>
         </div>
       </div>
+
+      {/* قسم ملخص الذروة والهدوء الشهري */}
+      {stats.totalReports > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 p-6 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="bg-white/20 p-3 rounded-2xl">
+                <TrendingUp size={32} />
+              </div>
+              <div>
+                <p className="text-indigo-100 text-xs font-black uppercase tracking-widest opacity-80">ذروة التسجيل (الشهر الأعلى)</p>
+                <h4 className="text-2xl font-black">{stats.highestMonth?.name}</h4>
+                <p className="text-sm font-bold text-indigo-200 mt-1">بإجمالي <span className="text-white text-lg">{stats.highestMonth?.count}</span> سجل خلال هذا الشهر</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-6 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden group">
+            <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="bg-white/20 p-3 rounded-2xl">
+                <TrendingDown size={32} />
+              </div>
+              <div>
+                <p className="text-emerald-50 text-xs font-black uppercase tracking-widest opacity-80">فترة الهدوء (الشهر الأقل)</p>
+                <h4 className="text-2xl font-black">{stats.lowestMonth?.name}</h4>
+                <p className="text-sm font-bold text-emerald-100 mt-1">بإجمالي <span className="text-white text-lg">{stats.lowestMonth?.count}</span> سجل فقط</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
