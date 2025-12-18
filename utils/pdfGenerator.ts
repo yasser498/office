@@ -109,306 +109,322 @@ const getCommonStyles = () => `
   .dynamic-data { font-weight: 900; border-bottom: 1px solid black; padding: 0 5px; }
   
   .notes-box { border: 1px dashed #444; padding: 8px; margin: 8px 0; font-size: 8pt; background: #fffcf0; }
-  
-  .important-notes { border: 1.5px solid black; padding: 8px; margin-top: 8px; font-size: 8pt; }
-  .important-notes-title { font-weight: 900; text-decoration: underline; margin-bottom: 3px; }
-  .important-notes-list { margin: 0; padding-right: 18px; font-weight: 700; }
-
-  .checkbox-list { display: flex; flex-direction: column; gap: 6px; font-weight: 900; margin: 8px 0; }
-  .checkbox-item { display: flex; align-items: center; gap: 8px; }
-  .checkbox-square { width: 14px; height: 14px; border: 1.5px solid black; display: inline-block; shrink: 0; }
-  
   .small-text-7 { font-size: 7pt !important; }
+  
+  .certificate-border { border: 15px double #336655; padding: 40px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; background: #fff; }
 `;
 
 const gt = (gender: 'boys' | 'girls', masc: string, fem: string) => gender === 'boys' ? masc : fem;
 
-const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
-  const dayName = getArabicDayName(report.date);
+const getOfficialHeaderHTML = (schoolName: string, educationDept: string, date: string, title: string, code: string) => `
+  <div class="header">
+    <div class="header-info">
+      <div>المملكة العربية السعودية</div>
+      <div>وزارة التعليم</div>
+      <div>${educationDept}</div>
+      <div>${schoolName}</div>
+    </div>
+    <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
+    <div class="header-left">التاريخ: ${date} هـ</div>
+  </div>
+  <div class="title-section">
+    <h1>${title}</h1>
+    <p>رمز النموذج : ${code}</p>
+  </div>
+`;
+
+const getEmployeeOfficialTableHTML = (employee: Employee) => {
   const civilId = String(employee.civilId || '').padStart(10, ' ').slice(-10);
   const civilIdHtml = civilId.split('').map(num => `<div class="digit">${num.trim() || '&nbsp;'}</div>`).join('');
 
   return `
+    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+       <div class="civil-id-label">السجل المدني</div>
+       <div class="civil-id-box">${civilIdHtml}</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">الاسم</th>
+          <th>التخصص</th>
+          <th>رقم الوظيفة</th>
+          <th>العمل الحالي</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${employee.name}</td>
+          <td>${employee.specialization || '---'}</td>
+          <td>${employee.employeeCode || '---'}</td>
+          <td>${employee.workplace || '---'}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+};
+
+// 1. إذن خروج (20-01)
+const getExitPermitOfficialHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => `
+  <div class="page-container">
+    ${getOfficialHeaderHTML(schoolName, educationDept, report.date, 'بطاقة خروج موظف أثناء الدوام الرسمي', '( و . م . ع . ن - 20 - 01 )')}
+    ${getEmployeeOfficialTableHTML(employee)}
+    <div style="border: 1.5px solid black; padding: 15px; margin-top: 10px;">
+      <div style="margin-bottom: 15px; font-weight: 900;">
+        ${gt(gender, 'سعادة مدير المدرسة /', 'سعادة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span> المحترم/ة
+      </div>
+      <p style="font-weight: 700; line-height: 2;">
+        أرجو التكرم بالموافقة لي بالخروج من المدرسة لظرف طارئ في يوم <span class="dynamic-data">${getArabicDayName(report.date)}</span> 
+        من الساعة ( <span class="dynamic-data">${report.lateArrivalTime || '........'}</span> ) إلى الساعة ( <span class="dynamic-data">${report.earlyDepartureTime || '........'}</span> ).
+      </p>
+      ${report.notes ? `<div style="margin: 10px 0; font-weight: 700;">السبب: <span class="dynamic-data">${report.notes}</span></div>` : ''}
+      <div class="signature-row" style="margin-top: 25px;">
+        <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
+        <span>التوقيع: ...........................</span>
+        <span>التاريخ: ${report.date} هـ</span>
+      </div>
+    </div>
+    <div style="border: 1.5px solid black; border-top: none; padding: 15px; background: #f9f9f9;">
+      <div class="section-label">مرئيات الإدارة:</div>
+      <div style="margin: 10px 0; font-weight: 900;">( &nbsp;&nbsp; ) يوافق له/ا &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) لا يوافق له/ا</div>
+      <div class="signature-row">
+        <span>${gt(gender, 'مدير المدرسة', 'مديرة المدرسة')}: <span class="dynamic-data">${principalName}</span></span>
+        <span>التوقيع: ...........................</span>
+        <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
+      </div>
+    </div>
+  </div>
+`;
+
+// 2. خطاب إنذار رسمي
+const getWarningOfficialHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => `
+  <div class="page-container">
+    ${getOfficialHeaderHTML(schoolName, educationDept, report.date, `خطاب إنذار (${report.warningLevel})`, '( و . م . ع . ن - 01 - 05 )')}
+    ${getEmployeeOfficialTableHTML(employee)}
+    <div style="margin-top: 20px;">
+      <p style="font-weight: 900;">${gt(gender, 'المكرم الأستاذ:', 'المكرمة الأستاذة:')} <span class="dynamic-data">${employee.name}</span> المحترم/ة</p>
+      <p style="font-weight: 900; margin: 10px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
+      <div style="text-align: justify; font-weight: 700; line-height: 2; margin-bottom: 20px;">
+        نظراً لملاحظة تكرار مخالفة الأنظمة والتعليمات الخاصة بالانضباط المدرسي، وتحديداً ما ورد في سجلاتنا بتاريخ <span class="dynamic-data">${report.date} هـ</span>، 
+        وحيث أن مصلحة العمل تقتضي الالتزام التام بالدوام الرسمي، فقد تقرر توجيه هذا الإنذار ( <span class="dynamic-data">${report.warningLevel}</span> ) برقم قيد ( <span class="dynamic-data">${report.letterNo || '---'}</span> ).
+        نأمل منكم التقيد بالتعليمات مستقبلاً لتلافي اتخاذ إجراءات نظامية أشد وفقاً للأنظمة واللوائح.
+      </div>
+      <p style="text-align: center; font-weight: 900; margin-top: 30px;">ولكم تحياتنا ،،،</p>
+      <div class="signature-row" style="margin-top: 40px;">
+        <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
+        <span>التوقيع: .........................</span>
+        <span>التاريخ: ${report.date} هـ</span>
+      </div>
+    </div>
+  </div>
+`;
+
+// 3. شهادة شكر وتقدير
+const getAppreciationOfficialHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => `
+  <div class="page-container">
+    <div class="certificate-border">
+      <div class="header" style="height: auto; margin-bottom: 30px;">
+        <div class="header-info"><div>المملكة العربية السعودية</div><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
+        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}" style="max-width: 120px;"></div>
+        <div class="header-left">التاريخ: ${report.date} هـ</div>
+      </div>
+      <h1 style="font-size: 28pt; font-weight: 900; color: #336655; margin-bottom: 30px;">شهادة شكر وتقدير</h1>
+      <p style="font-size: 14pt; font-weight: 700; line-height: 2;">
+        يسر إدارة <span class="dynamic-data">${schoolName}</span> أن تتقدم بجزيل الشكر والعرفان
+        <br>
+        ${gt(gender, 'للأستاذ /', 'للأستاذة /')}
+        <br>
+        <span style="font-size: 20pt; font-weight: 900; border-bottom: 2px solid #336655; padding: 0 40px;">${employee.name}</span>
+        <br>
+        وذلك نظير انضباطه وتميزه في الأداء الوظيفي،
+        <br>
+        سائلين المولى عز وجل له دوام التوفيق والسداد.
+      </p>
+      <div class="signature-row" style="margin-top: 60px; justify-content: center; gap: 100px;">
+        <div style="text-align: center;">
+          <div style="font-weight: 900; font-size: 12pt;">${gt(gender, 'مدير المدرسة', 'مديرة المدرسة')}</div>
+          <div style="margin-top: 10px; font-weight: 900;">${principalName}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+// 4. سجل حصر التأخر التراكمي
+const getCumulativeLateOfficialHTML = (employee: Employee, reports: Report[], schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
+  const lateReports = reports.filter(r => r.type === 'تأخر_انصراف');
+  const rows = lateReports.map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${getArabicDayName(r.date)}</td>
+      <td>${r.date}</td>
+      <td>${r.lateArrivalTime || '--'}</td>
+      <td>${r.earlyDepartureTime || '--'}</td>
+      <td>${r.notes || '---'}</td>
+    </tr>
+  `).join('');
+
+  return `
     <div class="page-container">
-        <div class="header">
-          <div class="header-info">
-            <div>المملكة العربية السعودية</div>
-            <div>وزارة التعليم</div>
-            <div>${educationDept}</div>
-            <div>${schoolName}</div>
-          </div>
-          <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-          <div class="header-left">التاريخ: ${report.date} هـ</div>
-        </div>
-
-        <div class="title-section">
-          <h1>نموذج تنبيه على تأخر / انصراف</h1>
-          <p>رمز النموذج : ( و . م . ع . ن - 20 - 02 )</p>
-        </div>
-
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-           <div class="civil-id-label">السجل المدني</div>
-           <div class="civil-id-box">${civilIdHtml}</div>
-        </div>
-
+      ${getOfficialHeaderHTML(schoolName, educationDept, new Date().toLocaleDateString('ar-SA'), 'سجل حصر التأخر التراكمي للموظف', '( و . م . ع . ن - 20 - 05 )')}
+      ${getEmployeeOfficialTableHTML(employee)}
+      <div style="margin-top: 15px;">
         <table class="data-table">
           <thead>
             <tr>
-              <th style="width: 35%;">الاسم</th>
-              <th>التخصص</th>
-              <th>رقم الوظيفة</th>
-              <th>العمل الحالي</th>
+              <th style="width: 40px;">م</th>
+              <th>اليوم</th>
+              <th>التاريخ</th>
+              <th>وقت الحضور</th>
+              <th>وقت الانصراف</th>
+              <th>ملاحظات</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>${employee.name}</td>
-              <td>${employee.specialization || '---'}</td>
-              <td>${employee.employeeCode || '---'}</td>
-              <td>${employee.workplace || '---'}</td>
-            </tr>
+            ${rows || '<tr><td colspan="6" style="padding:20px;">لا توجد سجلات تأخر مسجلة</td></tr>'}
           </tbody>
         </table>
-
-        <div style="margin-top: 10px;">
-          <div class="signature-row">
-            <span>${gt(gender, 'المكرم الأستاذ:', 'المكرمة الأستاذة:')} <span class="dynamic-data">${employee.name}</span></span>
-            <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
-          </div>
-          <p style="font-weight: 900; margin: 8px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-          <p style="font-weight: 700; line-height: 1.6;">
-            إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} هـ</span>، اتضح لنا ما يلي:
-          </p>
-          
-          <div style="margin-right: 20px; margin-top: 8px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-              <span style="width: 18px; height: 18px; border: 1.5px solid black; display: inline-block; text-align: center; line-height: 16px;">${report.lateArrivalTime ? '✓' : ''}</span>
-              <span style="font-weight: 900;">${gt(gender, 'تأخركم', 'تأخركن')} من بداية الدوام وحضوركم الساعة ( <span class="dynamic-data">${report.lateArrivalTime || '.......'}</span> )</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-              <span style="width: 18px; height: 18px; border: 1.5px solid black; display: inline-block; text-align: center; line-height: 16px;">${report.absenceSession ? '✓' : ''}</span>
-              <span style="font-weight: 900;">عدم تواجدكم أثناء العمل في الحصة ( <span class="dynamic-data">${report.absenceSession || '.......'}</span> )</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-              <span style="width: 18px; height: 18px; border: 1.5px solid black; display: inline-block; text-align: center; line-height: 16px;">${report.earlyDepartureTime ? '✓' : ''}</span>
-              <span style="font-weight: 900;">انصرافكم مبكراً قبل نهاية الدوام من الساعة ( <span class="dynamic-data">${report.earlyDepartureTime || '.......'}</span> )</span>
-            </div>
-          </div>
-
-          ${report.notes ? `<div class="notes-box"><b>الأسباب / الملاحظات:</b> ${report.notes}</div>` : ''}
-
-          <p style="margin-top: 10px; font-weight: 700;">نأمل توضيح أسباب ذلك مع إرفاق ما يؤيد عذركم ،،،،،، ولكم تحياتي</p>
-          
-          <div class="signature-row" style="margin-top: 20px;">
-            <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
-            <span>التوقيع: ..........................</span>
-            <span>التاريخ: <span class="dynamic-data">${report.date} هـ</span></span>
-          </div>
+        <div style="margin-top: 20px; font-weight: 700;">
+          إجمالي عدد حالات التأخر المحصورة: <span class="dynamic-data">${lateReports.length}</span> حالة.
         </div>
-
-        <div class="divider"></div>
-
-        <div>
-          <div class="section-label">إفادة الموظف/ة:</div>
-          <div class="signature-row">
-            <span>${gt(gender, 'المكرم مدير المدرسة /', 'المكرمة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span></span>
-            <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
-          </div>
-          <p style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
-          <p style="font-weight: 700; margin: 5px 0;">أفيدكم أن تأخري كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 35px; margin-bottom: 10px;"></div>
-          <p style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
-          
-          <div class="signature-row" style="margin-top: 15px;">
-            <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
-          </div>
+        <div class="signature-row" style="margin-top: 40px;">
+          <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
+          <span>التوقيع: .........................</span>
         </div>
-
-        <div style="border: 2px solid black; padding: 10px; margin-top: 10px; background: #fafafa;">
-          <div class="section-label" style="text-decoration: underline;">رأي ${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')}</div>
-          <div class="checkbox-list">
-            <div class="checkbox-item"><span class="checkbox-square"></span> ${gt(gender, 'عذره مقبول', 'عذرها مقبول')}</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> ${gt(gender, 'عذره غير مقبول ويحسم عليه', 'عذرها غير مقبول ويحسم عليها')}</div>
-          </div>
-          <div class="signature-row">
-            <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
-            <span>التوقيع: ..........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
-          </div>
-        </div>
-    </div>`;
+      </div>
+    </div>
+  `;
 };
 
-const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
+// 5. مساءلة غياب رسمية
+const getAbsenceOfficialHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
   const dayName = getArabicDayName(report.date);
   const endDayName = getArabicDayName(report.endDate || report.date);
-  const civilId = String(employee.civilId || '').padStart(10, ' ').slice(-10);
-  const civilIdHtml = civilId.split('').map(num => `<div class="digit">${num.trim() || '&nbsp;'}</div>`).join('');
 
   return `
     <div class="page-container">
-        <div class="header">
-          <div class="header-info">
-            <div>المملكة العربية السعودية</div>
-            <div>وزارة التعليم</div>
-            <div>${educationDept}</div>
-            <div>${schoolName}</div>
-          </div>
-          <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-          <div class="header-left">التاريخ: ${report.date} هـ</div>
+      ${getOfficialHeaderHTML(schoolName, educationDept, report.date, 'مساءلة غياب', '( و . م . ع . ن - 01 - 04 )')}
+      ${getEmployeeOfficialTableHTML(employee)}
+      <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 10px; text-align: center; font-weight: 900; margin-bottom: 12px;">
+        إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date} هـ</span>) 
+        ${gt(gender, 'تغيب', 'تغيبت')} عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date} هـ</span>)
+      </div>
+      <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
+        <div class="section-label small-text-7">(1) طلب الإفادة :</div>
+        <p class="small-text-7" style="font-weight: 700;">من خلال متابعة سجل الدوام تبين غيابكم خلال الفترة الموضحة أعلاه ، نأمل الإفادة عن أسباب ذلك.</p>
+        <div class="signature-row small-text-7">
+          <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
+          <span>التوقيع: .........................</span>
         </div>
-
-        <div class="title-section">
-          <h1>مساءلة غياب</h1>
-          <p>رمز النموذج : ( و . م . ع . ن - 01 - 04 )</p>
+      </div>
+      <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
+        <div class="section-label small-text-7">(2) الإفادة :</div>
+        <p class="small-text-7" style="margin: 5px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
+        <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
+        <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>
+        <div class="signature-row small-text-7"><span>الاسم: <span class="dynamic-data">${employee.name}</span></span><span>التوقيع: .................</span></div>
+      </div>
+      <div style="border: 2px solid #000; padding: 12px; background: #fafafa;">
+        <div class="section-label small-text-7">(3) قرار ${gt(gender, 'مدير المدرسة :', 'مديرة المدرسة :')}</div>
+        <div class="checkbox-list small-text-7">
+          <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة مرضية.</div>
+          <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة وفاة.</div>
+          <div class="checkbox-item"><span class="checkbox-square"></span> يحتسب غيابه من رصيد الإجازات الاضطرارية.</div>
+          <div class="checkbox-item"><span class="checkbox-square"></span> يعتمد الحسم لعدم قبول العذر.</div>
         </div>
-
-        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-           <div class="civil-id-label">السجل المدني</div>
-           <div class="civil-id-box">${civilIdHtml}</div>
-        </div>
-
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 32%;">الاسم</th>
-              <th>التخصص</th>
-              <th>المستوى</th>
-              <th>رقم الوظيفة</th>
-              <th>عدد الأيام</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${employee.name}</td>
-              <td>${employee.specialization || '---'}</td>
-              <td>${employee.level || '---'}</td>
-              <td>${employee.employeeCode || '---'}</td>
-              <td style="font-size: 11pt; font-weight: 900;">${report.daysCount || '1'}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 10px; text-align: center; font-weight: 900; margin-bottom: 12px;">
-          إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date} هـ</span>) 
-          ${gt(gender, 'تغيب', 'تغيبت')} عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date} هـ</span>)
-        </div>
-
-        <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
-          <div class="section-label small-text-7">(1) طلب الإفادة :</div>
-          <div class="signature-row small-text-7">
-            <span>${gt(gender, 'الأستاذ:', 'الأستاذة:')} <span class="dynamic-data">${employee.name}</span></span>
-            <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
-          </div>
-          <p class="small-text-7" style="font-weight: 700;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
-          <p class="small-text-7" style="text-align: justify; font-weight: 700; line-height: 1.6;">
-            من خلال متابعة سجل الدوام تبين غيابكم خلال الفترة الموضحة أعلاه ، نأمل الإفادة عن أسباب ذلك وتقديم ما يؤيد عذركم خلال أسبوع من تاريخه.
-          </p>
-          <div class="signature-row small-text-7" style="margin-top: 15px;">
-            <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
-            <span>التوقيع: .........................</span>
-            <span>التاريخ: <span class="dynamic-data">${report.date} هـ</span></span>
-          </div>
-        </div>
-
-        <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
-          <div class="section-label small-text-7">(2) الإفادة :</div>
-          <div class="signature-row small-text-7">
-            <span>${gt(gender, 'المكرم مدير المدرسة /', 'المكرمة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span></span>
-            <span>${gt(gender, 'وفقه الله', 'وفقها الله')}</span>
-          </div>
-          <p class="small-text-7" style="font-weight: 900; margin: 5px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد :</p>
-          <p class="small-text-7" style="margin: 5px 0; font-weight: 700;">أفيدكم أن غيابي كان للأسباب التالية :</p>
-          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 8px;"></div>
-          <div style="border-bottom: 1px dotted black; height: 25px; margin-bottom: 10px;"></div>
-          <p class="small-text-7" style="font-weight: 700;">وسأقوم بتقديم ما يثبت ذلك خلال أسبوع من تاريخه.</p>
-          
-          <div class="signature-row small-text-7" style="margin-top: 15px;">
-            <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span>التوقيع: .................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
-          </div>
-        </div>
-
-        <div style="border: 2px solid #000; padding: 12px; background: #fafafa;">
-          <div class="section-label small-text-7">(3) قرار ${gt(gender, 'مدير المدرسة :', 'مديرة المدرسة :')}</div>
-          <div class="checkbox-list small-text-7">
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة مرضية بعد التأكد من نظامية التقرير.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة وفاة.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> تحتسب له إجازة مرافقة.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> يحتسب غيابه من رصيده للإجازات الاضطرارية لقبول عذره إذا كان رصيده يسمح وإلا يحسم عليه.</div>
-            <div class="checkbox-item"><span class="checkbox-square"></span> يعتمد الحسم لعدم قبول عذره.</div>
-          </div>
-          <div class="signature-row small-text-7" style="margin-top: 15px;">
-            <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:') } <span class="dynamic-data">${principalName}</span></span>
-            <span>التوقيع: .........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
-          </div>
-        </div>
-
-        <div class="important-notes">
-          <div class="important-notes-title">ملاحظات هامة:</div>
-          <ol class="important-notes-list">
-            <li>يجب أن يوضح المتغيب أسباب غيابه فور تسلمه الاستمارة.</li>
-            <li>يعطى المتغيب مدة أسبوع لتقديم ما يفيد عذره.</li>
-            <li>تحفظ أصل المساءلة في ملف الموظف بالمدرسة والرفع بالحسم للإدارة في حال عدم قبول العذر.</li>
-          </ol>
-        </div>
+      </div>
     </div>`;
 };
 
-// الدوال المساعدة للطباعة
-export const generateExitPermit = async (employee: Employee, startTime?: string, endTime?: string, reason?: string) => {
-  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const principalName = await dbUtils.getSetting('principalName') || '..........';
-  const gender = await dbUtils.getSetting('schoolGender') || 'boys';
-  const currentDate = new Date().toLocaleDateString('ar-SA');
+// 6. تنبيه تأخر رسمي
+const getLateTنبيهOfficialHTML = (employee: Employee, report: Report, schoolName: string, principalName: string, educationDept: string, gender: 'boys' | 'girls') => {
+    const dayName = getArabicDayName(report.date);
+    return `
+      <div class="page-container">
+          ${getOfficialHeaderHTML(schoolName, educationDept, report.date, 'نموذج تنبيه على تأخر / انصراف', '( و . م . ع . ن - 20 - 02 )')}
+          ${getEmployeeOfficialTableHTML(employee)}
+          <div style="margin-top: 10px;">
+            <p style="font-weight: 700; line-height: 1.6;">إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} هـ</span>، اتضح لنا ما يلي:</p>
+            <div style="margin-right: 20px; margin-top: 8px;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;"><span style="width:14px; height:14px; border:1px solid #000; text-align:center; line-height:12px;">${report.lateArrivalTime ? '✓' : ''}</span> <span style="font-weight: 900;">تأخركم وحضوركم الساعة ( <span class="dynamic-data">${report.lateArrivalTime || '.......'}</span> )</span></div>
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;"><span style="width:14px; height:14px; border:1px solid #000; text-align:center; line-height:12px;">${report.earlyDepartureTime ? '✓' : ''}</span> <span style="font-weight: 900;">انصرافكم مبكراً الساعة ( <span class="dynamic-data">${report.earlyDepartureTime || '.......'}</span> )</span></div>
+            </div>
+            ${report.notes ? `<div class="notes-box"><b>الأسباب:</b> ${report.notes}</div>` : ''}
+            <p style="margin-top: 10px; font-weight: 700;">نأمل توضيح أسباب ذلك خلال أسبوع من تاريخه.</p>
+            <div class="signature-row" style="margin-top: 20px;">
+              <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
+              <span>التوقيع: ..........................</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div><div class="section-label">إفادة الموظف/ة:</div><div style="border-bottom: 1px dotted black; height: 35px; margin-bottom: 10px;"></div><div class="signature-row"><span>الاسم: <span class="dynamic-data">${employee.name}</span></span><span>التوقيع: .................</span></div></div>
+      </div>`;
+};
 
-  const html = `
-    <div class="page-container" style="padding: 20px;">
-        <div class="header">
-          <div class="header-info">
-            <div>المملكة العربية السعودية</div>
-            <div>وزارة التعليم</div>
-            <div>${educationDept}</div>
-            <div>${schoolName}</div>
-          </div>
-          <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-          <div class="header-left">التاريخ: ${currentDate} هـ</div>
-        </div>
-        <div class="title-section">
-          <h1>بطاقة خروج موظف أثناء الدوام الرسمي</h1>
-          <p>رمز النموذج : ( و . م . ع . ن - 20 - 01 )</p>
-        </div>
-        <div style="border: 1.5px solid black; padding: 15px;">
-          <div style="margin-bottom: 15px; font-weight: 900;">
-            ${gt(gender, 'سعادة مدير المدرسة /', 'سعادة مديرة المدرسة /')} <span class="dynamic-data">${principalName}</span> المحترم/ة
-          </div>
-          <p style="font-weight: 700; line-height: 2;">
-            أرجو التكرم بالموافقة لي بالخروج من المدرسة لظرف طارئ في يوم <span class="dynamic-data">${getArabicDayName(new Date().toISOString())}</span> 
-            من الساعة ( <span class="dynamic-data">${startTime || '........'}</span> ) إلى الساعة ( <span class="dynamic-data">${endTime || '........'}</span> ).
-          </p>
-          ${reason ? `<div style="margin: 10px 0; font-weight: 700;">السبب: <span class="dynamic-data">${reason}</span></div>` : ''}
-          <div class="signature-row" style="margin-top: 25px;">
-            <span>الاسم: <span class="dynamic-data">${employee.name}</span></span>
-            <span>التوقيع: ...........................</span>
-            <span>التاريخ: ${currentDate} هـ</span>
-          </div>
-        </div>
-        <div style="border: 1.5px solid black; border-top: none; padding: 15px; background: #f9f9f9;">
-          <div class="section-label">مرئيات الإدارة:</div>
-          <div style="margin: 10px 0; font-weight: 900;">( &nbsp;&nbsp; ) يوافق له/ا &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( &nbsp;&nbsp; ) لا يوافق له/ا</div>
-          <div class="signature-row">
-            <span>${gt(gender, 'مدير المدرسة', 'مديرة المدرسة')}: <span class="dynamic-data">${principalName}</span></span>
-            <span>التوقيع: ...........................</span>
-            <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
-          </div>
-        </div>
-    </div>`;
+// الدوال العامة للطباعة
+export const generateExitPermit = async (employee: Employee, report: Report) => {
+  const settings = {
+    schoolName: await dbUtils.getSetting('schoolName') || '..........',
+    educationDept: await dbUtils.getSetting('educationDept') || '..........',
+    principalName: await dbUtils.getSetting('principalName') || '..........',
+    gender: await dbUtils.getSetting('schoolGender') || 'boys'
+  };
+  const html = getExitPermitOfficialHTML(employee, report, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+export const generateWarningLetter = async (employee: Employee, report: Report) => {
+  const settings = {
+    schoolName: await dbUtils.getSetting('schoolName') || '..........',
+    educationDept: await dbUtils.getSetting('educationDept') || '..........',
+    principalName: await dbUtils.getSetting('principalName') || '..........',
+    gender: await dbUtils.getSetting('schoolGender') || 'boys'
+  };
+  const html = getWarningOfficialHTML(employee, report, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
+  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+export const generateAppreciationCertificate = async (employee: Employee, report: Report) => {
+  const settings = {
+    schoolName: await dbUtils.getSetting('schoolName') || '..........',
+    educationDept: await dbUtils.getSetting('educationDept') || '..........',
+    principalName: await dbUtils.getSetting('principalName') || '..........',
+    gender: await dbUtils.getSetting('schoolGender') || 'boys'
+  };
+  const html = getAppreciationOfficialHTML(employee, report, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
+  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+export const generateLateCumulativeLog = async (employee: Employee, reports: Report[]) => {
+  const settings = {
+    schoolName: await dbUtils.getSetting('schoolName') || '..........',
+    educationDept: await dbUtils.getSetting('educationDept') || '..........',
+    principalName: await dbUtils.getSetting('principalName') || '..........',
+    gender: await dbUtils.getSetting('schoolGender') || 'boys'
+  };
+  const html = getCumulativeLateOfficialHTML(employee, reports, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
+  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+export const generateOfficialAbsenceForm = async (employee: Employee, report: Report) => {
+    const settings = {
+        schoolName: await dbUtils.getSetting('schoolName') || '..........',
+        educationDept: await dbUtils.getSetting('educationDept') || '..........',
+        principalName: await dbUtils.getSetting('principalName') || '..........',
+        gender: await dbUtils.getSetting('schoolGender') || 'boys'
+    };
+    const html = getAbsenceOfficialHTML(employee, report, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
+    printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+export const generateLateArrivalDepartureForm = async (employee: Employee, report: Report) => {
+    const settings = {
+        schoolName: await dbUtils.getSetting('schoolName') || '..........',
+        educationDept: await dbUtils.getSetting('educationDept') || '..........',
+        principalName: await dbUtils.getSetting('principalName') || '..........',
+        gender: await dbUtils.getSetting('schoolGender') || 'boys'
+    };
+    const html = getLateTنبيهOfficialHTML(employee, report, settings.schoolName, settings.principalName, settings.educationDept, settings.gender);
+    printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
 export const generateBatchForms = async (batch: { employee: Employee, report: Report }[]) => {
@@ -416,85 +432,110 @@ export const generateBatchForms = async (batch: { employee: Employee, report: Re
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
   const principalName = await dbUtils.getSetting('principalName') || '..........';
   const gender = await dbUtils.getSetting('schoolGender') || 'boys';
+  
   const formsHTML = batch.map((item) => {
-    return item.report.type === 'تأخر_انصراف' 
-      ? getLateArrivalHTML(item.employee, item.report, schoolName, principalName, educationDept, gender)
-      : getAbsenceHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+    switch(item.report.type) {
+      case 'غياب': return getAbsenceOfficialHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+      case 'تأخر_انصراف': return getLateTنبيهOfficialHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+      case 'إذن_خروج': return getExitPermitOfficialHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+      case 'خطاب_إنذار': return getWarningOfficialHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+      case 'شكر_وتقدير': return getAppreciationOfficialHTML(item.employee, item.report, schoolName, principalName, educationDept, gender);
+      default: return '';
+    }
   }).join('');
-  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${formsHTML}</body></html>`);
-};
-
-export const generateLateArrivalDepartureForm = async (employee: Employee, report: Report) => {
-    const principalName = await dbUtils.getSetting('principalName') || '..........';
-    const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-    const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-    const gender = await dbUtils.getSetting('schoolGender') || 'boys';
-    const html = getLateArrivalHTML(employee, report, schoolName, principalName, educationDept, gender);
-    printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
-};
-
-export const generateOfficialAbsenceForm = async (employee: Employee, report: Report) => {
-    const principalName = await dbUtils.getSetting('principalName') || '..........';
-    const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-    const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-    const gender = await dbUtils.getSetting('schoolGender') || 'boys';
-    const html = getAbsenceHTML(employee, report, schoolName, principalName, educationDept, gender);
-    printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
-};
-
-export const generateWarningLetter = async (employee: Employee, warningLevel: string, letterNo?: string) => {
-  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const principalName = await dbUtils.getSetting('principalName') || '..........';
-  const gender = await dbUtils.getSetting('schoolGender') || 'boys';
-  const currentDate = new Date().toLocaleDateString('ar-SA');
-  const html = `
-    <div class="page-container" style="padding: 40px;">
-      <div class="header">
-        <div class="header-info"><div>المملكة العربية السعودية</div><div>وزارة التعليم</div><div>${educationDept}</div><div>${schoolName}</div></div>
-        <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-        <div class="header-left">الرقم: ${letterNo || '---'}<br>التاريخ: ${currentDate} هـ</div>
-      </div>
-      <div class="title-section"><h1>خطاب إنذار (${warningLevel})</h1></div>
-      <p style="font-weight: 900;">${gt(gender, 'المكرم الأستاذ:', 'المكرمة الأستاذة:')} ${employee.name}</p>
-      <div class="signature-row" style="margin-top: 50px;">
-        <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} ${principalName}</span>
-        <span>التوقيع: .................</span>
-      </div>
-    </div>`;
-  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
-};
-
-export const generateLateCumulativeLog = async (employee: Employee, reports: Report[]) => {
-  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const html = `<div class="page-container"><h1>سجل حصر التأخر التراكمي</h1><p>الموظف: ${employee.name}</p></div>`;
-  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+  
+  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${formsHTML}</body></html>`);
 };
 
 export const generateAcknowledgmentLog = async (employees: Employee[]) => {
   const schoolName = await dbUtils.getSetting('schoolName') || '..........';
   const educationDept = await dbUtils.getSetting('educationDept') || '..........';
   const rows = employees.map((emp, idx) => `<tr><td>${idx+1}</td><td style="text-align:right;">${emp.name}</td><td>${emp.employeeCode}</td><td></td></tr>`).join('');
-  const html = `<div class="page-container"><h1>بيان التوقيع بالعلم</h1><table class="data-table"><thead><tr><th>م</th><th>الاسم</th><th>رقم الوظيفة</th><th>التوقيع</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
-};
-
-export const generateAppreciationCertificate = async (employee: Employee) => {
-  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
-  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
-  const principalName = await dbUtils.getSetting('principalName') || '..........';
-  const gender = await dbUtils.getSetting('schoolGender') || 'boys';
-  const html = `<div class="page-container" style="border: 15px double #336655; text-align: center; padding: 50px;"><h1>شهادة شكر وتقدير</h1><p>${gt(gender, 'للأستاذ /', 'للأستاذة /')} ${employee.name}</p></div>`;
-  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
-};
-
-export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
-  const html = `<div class="page-container"><h1>التقرير الإحصائي العام</h1><p>إجمالي السجلات: ${stats.totalReports}</p></div>`;
+  const html = `<div class="page-container">${getOfficialHeaderHTML(schoolName, educationDept, '', 'بيان التوقيع بالعلم', '---')}<table class="data-table"><thead><tr><th>م</th><th>الاسم</th><th>رقم الوظيفة</th><th>التوقيع</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };
 
 export const generateEmployeePDF = async (employee: Employee, reports: Report[]) => {
-  const html = `<div class="page-container"><h1>سجل الموظف</h1><p>${employee.name}</p></div>`;
+  const schoolName = await dbUtils.getSetting('schoolName') || '..........';
+  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
+  const html = `<div class="page-container">${getOfficialHeaderHTML(schoolName, educationDept, '', 'سجل متابعة الموظف', '---')}${getEmployeeOfficialTableHTML(employee)}<p>عدد السجلات: ${reports.length}</p></div>`;
   printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
+};
+
+// Fix missing generateStatisticsPDF export
+export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
+  const educationDept = await dbUtils.getSetting('educationDept') || '..........';
+  const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+  
+  const topRows = stats.topEmployees.map((item: any, idx: number) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td style="text-align:right;">${item.employee?.name || '---'}</td>
+      <td>${item.employee?.civilId || '---'}</td>
+      <td>${item.count}</td>
+    </tr>
+  `).join('');
+
+  const monthlyRows = monthNames.map((name: string, idx: number) => `
+    <tr>
+      <td>${name}</td>
+      <td>${stats.monthlyData[idx] || 0}</td>
+    </tr>
+  `).join('');
+
+  const html = `
+    <div class="page-container">
+      ${getOfficialHeaderHTML(schoolName, educationDept, new Date().toLocaleDateString('ar-SA'), 'تقرير الإحصائيات العام', '---')}
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <div style="border: 1.5px solid black; padding: 10px; text-align: center; background: #f9f9f9;">
+          <div style="font-weight: 900;">إجمالي السجلات</div>
+          <div style="font-size: 16pt; font-weight: 900; color: #336655;">${stats.totalReports}</div>
+        </div>
+        <div style="border: 1.5px solid black; padding: 10px; text-align: center; background: #f9f9f9;">
+          <div style="font-weight: 900;">حالات الغياب</div>
+          <div style="font-size: 16pt; font-weight: 900; color: #e11d48;">${stats.absenceCount}</div>
+        </div>
+        <div style="border: 1.5px solid black; padding: 10px; text-align: center; background: #f9f9f9;">
+          <div style="font-weight: 900;">تنبيهات التأخر</div>
+          <div style="font-size: 16pt; font-weight: 900; color: #d97706;">${stats.lateCount}</div>
+        </div>
+      </div>
+
+      <div class="section-label">الموظفون الأكثر تسجيلاً:</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;">م</th>
+            <th>الاسم</th>
+            <th>السجل المدني</th>
+            <th>عدد السجلات</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${topRows || '<tr><td colspan="4">لا توجد بيانات متاحة</td></tr>'}
+        </tbody>
+      </table>
+
+      <div class="section-label" style="margin-top: 20px;">النشاط الشهري:</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>الشهر</th>
+            <th>عدد السجلات</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${monthlyRows}
+        </tbody>
+      </table>
+
+      <div class="signature-row" style="margin-top: 40px;">
+        <span>مدير المدرسة: <span class="dynamic-data">${principalName}</span></span>
+        <span>التوقيع: .........................</span>
+      </div>
+    </div>
+  `;
+
+  printContent(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>${getCommonStyles()}</style></head><body>${html}</body></html>`);
 };

@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { Report, Employee } from '../types';
-import { History, Download, FileCheck, AlertCircle, Clock, Edit2, Trash2, FileText, Award, AlertTriangle, ShieldCheck, CalendarCheck } from 'lucide-react';
+import { Download, FileCheck, Clock, Edit2, Trash2, ShieldCheck, CalendarCheck } from 'lucide-react';
 import { 
   generateOfficialAbsenceForm, 
   generateEmployeePDF, 
@@ -21,7 +21,6 @@ interface HistoryListProps {
 
 const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, onDeleteReport, onEditReport }) => {
   
-  // فصل التقارير بناءً على النوع
   const attendanceReports = useMemo(() => 
     reports.filter(r => r.type === 'غياب' || r.type === 'تأخر_انصراف'),
   [reports]);
@@ -42,16 +41,16 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
 
   return (
     <div className="space-y-12 animate-in zoom-in-95 duration-500">
-      {/* 1. سجل الحضور والانضباط اليومي */}
+      {/* 1. سجل الحضور والانضباط */}
       <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner">
+            <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
               <CalendarCheck size={28} />
             </div>
             <div>
               <h3 className="text-2xl font-black text-slate-800">سجل الحضور والغياب</h3>
-              <p className="text-xs text-slate-400 font-bold">متابعة الغيابات وتأخر الدوام الرسمي</p>
+              <p className="text-xs text-slate-400 font-bold">متابعة الغيابات وتأخر الدوام</p>
             </div>
           </div>
           
@@ -73,7 +72,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
                 <tr className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                   <th className="p-4 rounded-r-xl">التاريخ</th>
                   <th className="p-4">النوع</th>
-                  <th className="p-4">المدة / الحضور</th>
+                  <th className="p-4">البيان</th>
                   <th className="p-4 text-center rounded-l-xl">الإجراءات</th>
                 </tr>
               </thead>
@@ -102,20 +101,27 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
         )}
       </div>
 
-      {/* 2. سجل الإجراءات الإدارية والتقديرية */}
+      {/* 2. السجل الإداري والتقديري */}
       <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl border-4 border-emerald-50 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-32 h-32 bg-emerald-50 rounded-full -ml-16 -mt-16 opacity-40"></div>
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
+              <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
                 <ShieldCheck size={28} />
               </div>
               <div>
                 <h3 className="text-2xl font-black text-slate-800">السجل الإداري والتقديري</h3>
-                <p className="text-xs text-slate-400 font-bold">أذونات الخروج، الإنذارات الرسمية، شهادات الشكر</p>
+                <p className="text-xs text-slate-400 font-bold">الأذونات، الإنذارات، وشهادات الشكر</p>
               </div>
             </div>
+            <button
+              onClick={() => generateEmployeePDF(selectedEmployee, reports)}
+              className="flex items-center gap-2 bg-slate-800 text-white px-6 py-3 rounded-2xl font-black text-sm hover:bg-black transition-all shadow-xl"
+            >
+              <Download size={18} />
+              تحميل السجل الكامل
+            </button>
           </div>
 
           {administrativeReports.length === 0 ? (
@@ -145,8 +151,8 @@ const HistoryList: React.FC<HistoryListProps> = ({ reports, selectedEmployee, on
                         </span>
                       </td>
                       <td className="p-4 font-bold text-sm">
-                        {report.type === 'إذن_خروج' ? `من ${report.lateArrivalTime} لـ ${report.earlyDepartureTime}` : 
-                         report.type === 'خطاب_إنذار' ? `مستوى: ${report.warningLevel}` : 'شهادة تقدير'}
+                        {report.type === 'إذن_خروج' ? `من ${report.lateArrivalTime} إلى ${report.earlyDepartureTime}` : 
+                         report.type === 'خطاب_إنذار' ? `إنذار: ${report.warningLevel}` : 'شهادة شكر'}
                       </td>
                       <td className="p-4 flex justify-center gap-2">
                         <button onClick={() => handlePrint(report)} className="bg-emerald-600 text-white px-4 py-1.5 rounded-xl hover:bg-emerald-700 text-[10px] font-black flex items-center gap-2 shadow-lg"><FileCheck size={14}/> طباعة</button>

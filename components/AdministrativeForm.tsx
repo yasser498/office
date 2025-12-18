@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Report, Employee, ReportType } from '../types';
-import { Send, FileText, Clock, AlertTriangle, Award, X, ShieldCheck } from 'lucide-react';
+import { Send, Clock, AlertTriangle, Award, X, ShieldCheck } from 'lucide-react';
 
 interface AdministrativeFormProps {
   selectedEmployees: Employee[];
@@ -15,8 +15,8 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
     type: 'إذن_خروج' as ReportType,
     notes: '',
     actionTaken: '',
-    lateArrivalTime: '00:00',
-    earlyDepartureTime: '00:00',
+    lateArrivalTime: '08:00',
+    earlyDepartureTime: '10:00',
     warningLevel: 'الأول',
     letterNo: ''
   });
@@ -31,7 +31,7 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
       for (const emp of selectedEmployees) {
         await onSave({ ...formData, createdAt: todayStr } as Report, emp.id);
       }
-      alert('تم تسجيل الإجراء الإداري بنجاح');
+      alert('تم إصدار الإجراء الإداري بنجاح');
       onClose();
     } catch (err) {
       alert('حدث خطأ أثناء الحفظ');
@@ -49,7 +49,7 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
               <ShieldCheck size={32} />
             </div>
             <div>
-              <h3 className="text-2xl font-black">إصدار إجراء إداري / تقديري</h3>
+              <h3 className="text-2xl font-black">إصدار مستند إداري رسمي</h3>
               <p className="text-sm text-emerald-100 font-bold mt-1">المستهدفون: {selectedEmployees.length} موظفاً</p>
             </div>
           </div>
@@ -61,12 +61,12 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
         <form onSubmit={handleSubmit} className="p-8 overflow-y-auto space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-3">
-              <label className="text-sm font-black text-slate-700 mr-2">نوع المستند الرسمي</label>
+              <label className="text-sm font-black text-slate-700 mr-2">اختر نوع المستند</label>
               <div className="grid grid-cols-1 gap-3">
                 {[
-                  { id: 'إذن_خروج', label: 'إذن خروج (20-01)', icon: Clock, color: 'emerald' },
-                  { id: 'خطاب_إنذار', label: 'خطاب إنذار رسمي', icon: AlertTriangle, color: 'rose' },
-                  { id: 'شكر_وتقدير', label: 'شهادة شكر وتقدير', icon: Award, color: 'amber' }
+                  { id: 'إذن_خروج', label: 'إذن خروج (20-01)', icon: Clock },
+                  { id: 'خطاب_إنذار', label: 'خطاب إنذار رسمي', icon: AlertTriangle },
+                  { id: 'شكر_وتقدير', label: 'شهادة شكر وتقدير', icon: Award }
                 ].map((type) => (
                   <button
                     key={type.id}
@@ -87,7 +87,7 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-black text-slate-700 mr-2">تاريخ الإصدار</label>
+                <label className="text-sm font-black text-slate-700 mr-2">التاريخ</label>
                 <input
                   type="date"
                   required
@@ -98,7 +98,7 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
               </div>
 
               {formData.type === 'إذن_خروج' && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-right-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-black text-slate-700 mr-2">وقت الخروج</label>
                     <input type="time" value={formData.lateArrivalTime} onChange={(e) => setFormData({...formData, lateArrivalTime: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold" />
@@ -111,18 +111,18 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
               )}
 
               {formData.type === 'خطاب_إنذار' && (
-                <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-right-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-black text-slate-700 mr-2">المستوى</label>
                     <select value={formData.warningLevel} onChange={(e) => setFormData({...formData, warningLevel: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-black outline-none">
-                      <option value="الأول">إنذار أول</option>
-                      <option value="الثاني">إنذار ثاني</option>
-                      <option value="النهائي">إنذار نهائي</option>
+                      <option value="الأول">الإنذار الأول</option>
+                      <option value="الثاني">الإنذار الثاني</option>
+                      <option value="النهائي">الإنذار النهائي</option>
                     </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-black text-slate-700 mr-2">رقم القيد</label>
-                    <input type="text" placeholder="123/أ" value={formData.letterNo} onChange={(e) => setFormData({...formData, letterNo: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold" />
+                    <input type="text" placeholder="مثلاً: 12/ق" value={formData.letterNo} onChange={(e) => setFormData({...formData, letterNo: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold" />
                   </div>
                 </div>
               )}
@@ -130,13 +130,13 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
           </div>
 
           <div className="space-y-3">
-            <label className="text-sm font-black text-slate-700 mr-2">المحتوى / الأسباب (يظهر في التقرير)</label>
+            <label className="text-sm font-black text-slate-700 mr-2">محتوى الخطاب / الملاحظات</label>
             <textarea
               rows={3}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-[2rem] outline-none focus:ring-4 focus:ring-emerald-100 font-bold transition-all resize-none"
-              placeholder="اكتب هنا تفاصيل الظرف الطارئ أو أسباب الإنذار أو كلمات الشكر..."
+              className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-[2rem] outline-none font-bold resize-none"
+              placeholder="اكتب أسباب الإجراء أو نص الشكر هنا..."
             />
           </div>
 
@@ -146,7 +146,7 @@ const AdministrativeForm: React.FC<AdministrativeFormProps> = ({ selectedEmploye
             className="w-full flex items-center justify-center gap-4 py-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[2.5rem] font-black text-2xl transition-all shadow-2xl active:scale-95 disabled:bg-slate-300"
           >
             <Send size={28} />
-            {isSubmitting ? 'جاري الإصدار...' : 'حفظ وإصدار المستندات'}
+            {isSubmitting ? 'جاري الإصدار...' : 'حفظ وإصدار المستند'}
           </button>
         </form>
       </div>
