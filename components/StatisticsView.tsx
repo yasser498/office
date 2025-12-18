@@ -29,18 +29,14 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
       }))
       .filter(item => item.employee)
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, 40); // تم زيادة العدد من 5 إلى 40 لاختبار نظام العمودين وتعدد الصفحات
 
-    // حساب التوزيع الشهري (للسنة الحالية)
+    // حساب التوزيع الشهري
     const monthlyData: Record<number, number> = {};
-    const currentYear = new Date().getFullYear();
-    
     reports.forEach(r => {
       const d = new Date(r.date);
-      if (d.getFullYear() === currentYear || true) { // لشرح المثال سنأخذ الكل
-        const month = d.getMonth();
-        monthlyData[month] = (monthlyData[month] || 0) + 1;
-      }
+      const month = d.getMonth();
+      monthlyData[month] = (monthlyData[month] || 0) + 1;
     });
 
     return { totalReports, absenceCount, lateCount, topEmployees, monthlyData };
@@ -71,7 +67,6 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
         </button>
       </div>
 
-      {/* بطاقات الملخص */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
           <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
@@ -105,13 +100,12 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* الموظفين الأكثر تكراراً */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <TrendingUp size={20} className="text-indigo-600" />
             <h3 className="font-black text-slate-800">الأكثر تسجيلاً (قائمة المتابعة)</h3>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {stats.topEmployees.length === 0 ? (
               <p className="text-center py-10 text-slate-400 font-bold">لا توجد بيانات كافية</p>
             ) : stats.topEmployees.map((item, idx) => (
@@ -133,11 +127,10 @@ const StatisticsView: React.FC<StatisticsViewProps> = ({ reports, employees }) =
           </div>
         </div>
 
-        {/* التوزيع الشهري - رسم بياني بسيط */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <CalendarDays size={20} className="text-indigo-600" />
-            <h3 className="font-black text-slate-800">النشاط الشهري (السنة الحالية)</h3>
+            <h3 className="font-black text-slate-800">النشاط الشهري</h3>
           </div>
           <div className="flex items-end justify-between h-48 gap-2 pt-4">
             {monthNames.map((name, idx) => {
