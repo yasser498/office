@@ -1,5 +1,5 @@
 
-export type ReportType = 'غياب' | 'تأخر_انصراف';
+export type ReportType = 'غياب' | 'تأخر_انصراف' | 'إذن_خروج' | 'خطاب_إنذار' | 'شكر_وتقدير';
 
 export interface Employee {
   id: number;
@@ -31,6 +31,10 @@ export interface Report {
   lateArrivalTime?: string;
   absenceSession?: string;
   earlyDepartureTime?: string;
+
+  // حقول خاصة بالتقارير الإدارية
+  warningLevel?: string;
+  letterNo?: string;
 }
 
 export interface DBConfig {
