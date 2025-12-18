@@ -18,8 +18,9 @@ export interface Employee {
 export interface Report {
   id?: number;
   employeeId: number;
-  date: string;          // تاريخ البداية
+  date: string;          // تاريخ البداية (تاريخ الحالة)
   endDate?: string;      // تاريخ النهاية (للغياب)
+  createdAt?: string;    // تاريخ الإدخال الفعلي للنظام
   daysCount?: number;    // عدد أيام الغياب
   type: ReportType;
   notes: string;

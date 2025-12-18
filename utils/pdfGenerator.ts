@@ -30,15 +30,19 @@ const printContent = (htmlContent: string) => {
   const doc = iframe.contentWindow?.document;
   if (doc) {
     doc.open();
-    doc.write(htmlContent);
+    // إضافة كود JS داخل الإطار لانتظار تحميل الصور
+    const injectedHTML = htmlContent.replace('</body>', `
+      <script>
+        window.onload = function() {
+          setTimeout(() => {
+            window.focus();
+            window.print();
+          }, 200);
+        };
+      </script>
+    </body>`);
+    doc.write(injectedHTML);
     doc.close();
-    
-    setTimeout(() => {
-      if (iframe.contentWindow) {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-      }
-    }, 500);
   }
 };
 
@@ -47,11 +51,12 @@ const getCommonStyles = () => `
   body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; font-size: 9pt; }
   .page-container { width: 190mm; margin: 10mm auto; min-height: 277mm; display: flex; flex-direction: column; position: relative; box-sizing: border-box; padding: 5mm; }
   .page-break { page-break-after: always; height: 0; }
-  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .header-info { width: 40%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
-  .logo-container { width: 20%; text-align: center; }
-  .logo-container img { max-width: 110px; height: auto; }
-  .title-section { text-align: center; margin-bottom: 15px; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 100%; }
+  .header-info { width: 33.33%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
+  .logo-container { width: 33.33%; text-align: center; display: flex; justify-content: center; align-items: center; }
+  .logo-container img { max-width: 105px; height: auto; display: block; }
+  .header-left { width: 33.33%; text-align: left; font-weight: bold; }
+  .title-section { text-align: center; margin-bottom: 15px; width: 100%; }
   .title-section h1 { font-size: 13pt; margin: 0; font-weight: 900; border-bottom: 2px solid black; display: inline-block; padding-bottom: 4px; }
   .data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
   .data-table th, .data-table td { border: 1px solid black; padding: 6px; text-align: center; font-size: 9pt; font-weight: bold; }
@@ -61,6 +66,21 @@ const getCommonStyles = () => `
   .stats-card h4 { margin: 0; font-size: 8pt; border-bottom: 1px solid black; padding-bottom: 5px; margin-bottom: 5px; }
   .stats-card div { font-size: 16pt; font-weight: 900; }
   .signature-section { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; font-weight: bold; }
+  .civil-id-box { display: flex; justify-content: flex-start; margin-bottom: 10px; width: 100%; }
+  .civil-id-inner { border: 1px solid black; display: flex; align-items: center; }
+  .civil-id-label { background: #336655; color: white; padding: 2px 10px; font-weight: bold; font-size: 9pt; border-left: 1px solid black; }
+  .bullet-point { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: bold; }
+  .diamond { color: #000; font-size: 12pt; }
+  .input-line { border-bottom: 1px dotted black; min-width: 80px; display: inline-block; text-align: center; }
+  .dynamic-data { font-weight: 900; }
+  .absence-line { background: #f9f9f9; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold; font-size: 9.5pt; margin-bottom: 10px; }
+  .signature-row { display: flex; justify-content: space-between; margin: 8px 0; font-weight: bold; font-size: 9.5pt; }
+  .divider { border-top: 1.5px solid #000; margin: 8px 0; }
+  .decision-box { border: 1.5px solid black; padding: 8px; margin-top: 5px; font-size: 9pt; font-weight: bold; }
+  .notes-box { border: 1px solid black; padding: 6px; font-size: 8pt; margin-top: auto; line-height: 1.4; }
+  .content-box { border: 1px solid #eee; padding: 10px; margin-bottom: 10px; }
+  .section-title { font-weight: 900; margin-bottom: 5px; color: #336655; }
+  .signatures { display: flex; justify-content: space-between; margin-top: 10px; }
 `;
 
 export const generateStatisticsPDF = async (stats: any, schoolName: string, principalName: string) => {
@@ -87,10 +107,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
     <head>
       <meta charset="UTF-8">
       <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-      <style>
-        ${getCommonStyles()}
-        .section-title { background: #336655; color: white; padding: 5px 10px; font-weight: bold; margin-bottom: 10px; font-size: 10pt; }
-      </style>
+      <style>${getCommonStyles()} .pdf-section-title { background: #336655; color: white; padding: 5px 10px; font-weight: bold; margin-bottom: 10px; font-size: 10pt; }</style>
     </head>
     <body>
       <div class="page-container">
@@ -104,7 +121,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           <div class="logo-container">
             <img src="${MINISTRY_LOGO_URL}" alt="شعار الوزارة">
           </div>
-          <div style="width: 40%; text-align: left; font-weight: bold;">
+          <div class="header-left">
             التاريخ: ${currentDate}هـ
           </div>
         </div>
@@ -113,7 +130,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           <h1>تقرير الإحصائيات والتحليل العام للانضباط</h1>
         </div>
 
-        <div class="section-title">أولاً: ملخص عام</div>
+        <div class="pdf-section-title">أولاً: ملخص عام</div>
         <div class="stats-grid">
           <div class="stats-card">
             <h4>إجمالي السجلات المسجلة</h4>
@@ -129,7 +146,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           </div>
         </div>
 
-        <div class="section-title">ثانياً: قائمة الموظفين الأكثر تسجيلاً (قائمة المتابعة)</div>
+        <div class="pdf-section-title">ثانياً: قائمة الموظفين الأكثر تسجيلاً (قائمة المتابعة)</div>
         <table class="data-table">
           <thead>
             <tr>
@@ -144,7 +161,7 @@ export const generateStatisticsPDF = async (stats: any, schoolName: string, prin
           </tbody>
         </table>
 
-        <div class="section-title">ثالثاً: النشاط الشهري (توزيع السجلات)</div>
+        <div class="pdf-section-title">ثالثاً: النشاط الشهري (توزيع السجلات)</div>
         <table class="data-table" style="width: 50%; margin-right: 0;">
           <thead>
             <tr>
@@ -293,10 +310,6 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <span>التاريخ: &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
-
-        <div class="note-footer">
-          * ملاحظة: ترفق بطاقة المساءلة مع أصل القرار في حالة عدم قبول العذر لحفظها بملفه بالإدارة ، أصله لملفه بالمدرسة
-        </div>
     </div>`;
 };
 
@@ -320,7 +333,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
           <div class="logo-container">
             <img src="${MINISTRY_LOGO_URL}" alt="شعار الوزارة">
           </div>
-          <div style="width: 35%;"></div>
+          <div class="header-left"></div>
         </div>
 
         <div class="title-section">
@@ -416,16 +429,6 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
             <span>التاريخ: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 144 هـ</span>
           </div>
         </div>
-
-        <div class="notes-box">
-          <strong style="text-decoration: underline; margin-bottom: 4px; display: block;">ملاحظات هامة :</strong>
-          <ul class="notes-list">
-            <li>1- تستكمل الاستمارة من المدير المباشر وإصدار القرار بموجبه .</li>
-            <li>2- إذا سبق عطلة نهاية الأسبوع غياب وألحقها غياب تحتسب مدة الغياب كاملة .</li>
-            <li>3- يجب أن يوضح المتغيب أسباب غيابه فور تسلمه الاستمارة ويعيدها لمديره .</li>
-            <li>4- يعطى المتغيب مدة أسبوع لتقديم ما يفيد عذره فإذا انقضت المدة يتم الحسم .</li>
-          </ul>
-        </div>
     </div>`;
 };
 
@@ -452,34 +455,7 @@ export const generateBatchForms = async (batch: { employee: Employee, report: Re
       <meta charset="UTF-8">
       <title>طباعة مجمعة</title>
       <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-      <style>
-        @page { size: A4; margin: 0; }
-        body { font-family: 'Cairo', sans-serif; margin: 0; padding: 0; color: #000; -webkit-print-color-adjust: exact; font-size: 9pt; }
-        .page-container { width: 190mm; margin: 10mm auto; min-height: 277mm; display: flex; flex-direction: column; position: relative; box-sizing: border-box; }
-        .page-break { page-break-after: always; height: 0; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .header-info { width: 40%; font-size: 9pt; font-weight: bold; line-height: 1.6; text-align: right; }
-        .logo-container { width: 20%; text-align: center; }
-        .logo-container img { max-width: 110px; height: auto; }
-        .title-section { text-align: center; margin-bottom: 10px; }
-        .title-section h1 { font-size: 11pt; margin: 0; font-weight: 900; border-bottom: 1.5px solid black; display: inline-block; padding-bottom: 2px; }
-        .civil-id-box { display: flex; justify-content: flex-start; margin-bottom: 10px; width: 100%; }
-        .civil-id-inner { border: 1px solid black; display: flex; align-items: center; }
-        .civil-id-label { background: #336655; color: white; padding: 2px 10px; font-weight: bold; font-size: 9pt; border-left: 1px solid black; }
-        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-        .data-table th, .data-table td { border: 1px solid black; padding: 4px; text-align: center; font-size: 9pt; font-weight: bold; }
-        .data-table th { background: #336655; color: white; }
-        .bullet-point { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: bold; }
-        .diamond { color: #000; font-size: 12pt; }
-        .input-line { border-bottom: 1px dotted black; min-width: 80px; display: inline-block; text-align: center; }
-        .dynamic-data { font-weight: 900; }
-        .absence-line { background: #f9f9f9; border: 1px solid #000; padding: 6px; text-align: center; font-weight: bold; font-size: 9.5pt; margin-bottom: 10px; }
-        .signature-row, .signatures { display: flex; justify-content: space-between; margin: 8px 0; font-weight: bold; font-size: 9.5pt; }
-        .divider { border-top: 1.5px solid #000; margin: 8px 0; }
-        .decision-box { border: 1.5px solid black; padding: 8px; margin-top: 5px; font-size: 9pt; font-weight: bold; }
-        .notes-box { border: 1px solid black; padding: 6px; font-size: 8pt; margin-top: auto; line-height: 1.4; }
-        @media print { .page-container { margin: 10mm auto; } }
-      </style>
+      <style>${getCommonStyles()}</style>
     </head>
     <body>${formsHTML}</body>
     </html>

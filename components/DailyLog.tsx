@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Report, Employee, ReportType } from '../types';
-import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut, Filter } from 'lucide-react';
+import { ClipboardList, Printer, Search, Calendar, CheckSquare, Square, Trash2, Clock, LogOut, Filter, History } from 'lucide-react';
 import { generateBatchForms } from '../utils/pdfGenerator';
 
 interface DailyLogProps {
@@ -14,6 +14,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
   const [dateFilter, setDateFilter] = useState(new Date().toISOString().split('T')[0]);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('الكل');
+  const [filterMode, setFilterMode] = useState<'event' | 'creation'>('creation'); // الافتراضي تاريخ الإدخال
   const [selectedReportIds, setSelectedReportIds] = useState<number[]>([]);
 
   const employeeMap = useMemo(() => {
@@ -26,15 +27,24 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
     return reports
       .filter(r => {
         const emp = employeeMap.get(r.employeeId);
-        const matchesDate = !dateFilter || r.date === dateFilter;
+        
+        // اختيار أي تاريخ سنقارن به بناءً على وضع الفلترة
+        const targetDate = filterMode === 'event' ? r.date : (r.createdAt || r.date);
+        
+        const matchesDate = !dateFilter || targetDate === dateFilter;
         const matchesSearch = !searchQuery || 
           emp?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           emp?.civilId?.includes(searchQuery);
         const matchesType = typeFilter === 'الكل' || r.type === typeFilter;
         return matchesDate && matchesSearch && matchesType;
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [reports, dateFilter, searchQuery, typeFilter, employeeMap]);
+      .sort((a, b) => {
+          // ترتيب حسب تاريخ الإدخال الأحدث أولاً
+          const dateA = new Date(a.createdAt || a.date).getTime();
+          const dateB = new Date(b.createdAt || b.date).getTime();
+          return dateB - dateA;
+      });
+  }, [reports, dateFilter, searchQuery, typeFilter, filterMode, employeeMap]);
 
   const toggleSelect = (id: number) => {
     setSelectedReportIds(prev => 
@@ -62,6 +72,11 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
     if (batchData.length > 0) {
       await generateBatchForms(batchData);
     }
+  };
+
+  const setTodayEntryFilter = () => {
+      setFilterMode('creation');
+      setDateFilter(new Date().toISOString().split('T')[0]);
   };
 
   const getTypeName = (type: string) => {
@@ -101,12 +116,19 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
               <ClipboardList size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-slate-800">السجل العام واليومي</h3>
-              <p className="text-xs text-slate-500 font-bold">يتم عرض التقارير حسب الفلاتر المختارة أدناه</p>
+              <h3 className="text-xl font-black text-slate-800">السجل العام واليومي للطباعة</h3>
+              <p className="text-xs text-slate-500 font-bold">يمكنك الطباعة حسب تاريخ تسجيلك للبيانات اليوم</p>
             </div>
           </div>
           
           <div className="flex gap-2 w-full md:w-auto">
+            <button
+                onClick={setTodayEntryFilter}
+                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold transition-all shadow-md active:scale-95"
+            >
+                <History size={18} />
+                مسجلات اليوم
+            </button>
             <button
               onClick={handleBatchPrint}
               disabled={selectedReportIds.length === 0}
@@ -118,7 +140,18 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <div className="relative">
+            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <select
+              value={filterMode}
+              onChange={(e) => setFilterMode(e.target.value as 'event' | 'creation')}
+              className="w-full pr-10 pl-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-bold appearance-none"
+            >
+              <option value="creation">تصفية حسب: تاريخ الإدخال</option>
+              <option value="event">تصفية حسب: تاريخ الحالة</option>
+            </select>
+          </div>
           <div className="relative">
             <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input
@@ -163,7 +196,8 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                 </button>
               </th>
               <th className="px-6 py-4">الموظف</th>
-              <th className="px-6 py-4">التاريخ</th>
+              <th className="px-6 py-4">تاريخ الحالة</th>
+              <th className="px-6 py-4">تاريخ الإدخال</th>
               <th className="px-6 py-4">النوع</th>
               <th className="px-6 py-4">التفاصيل</th>
               <th className="px-6 py-4 text-center">الإجراء</th>
@@ -172,7 +206,7 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
           <tbody className="divide-y divide-slate-50">
             {filteredReports.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-20 text-center text-slate-400 font-bold">لا توجد تقارير مطابقة للفلاتر المختارة</td>
+                <td colSpan={7} className="py-20 text-center text-slate-400 font-bold">لا توجد تقارير مطابقة للفلاتر المختارة</td>
               </tr>
             ) : filteredReports.map((report) => {
               const emp = employeeMap.get(report.employeeId);
@@ -188,7 +222,8 @@ const DailyLog: React.FC<DailyLogProps> = ({ employees, onDeleteReport, reports 
                     <div className="font-bold text-slate-800 text-sm leading-tight">{emp?.name || '---'}</div>
                     <div className="text-[10px] text-slate-400 font-mono tracking-tighter">{emp?.civilId}</div>
                   </td>
-                  <td className="px-6 py-4 text-[13px] font-mono font-bold text-slate-600">{report.date}</td>
+                  <td className="px-6 py-4 text-[12px] font-mono font-bold text-slate-600">{report.date}</td>
+                  <td className="px-6 py-4 text-[12px] font-mono font-bold text-indigo-400">{(report.createdAt || report.date)}</td>
                   <td className="px-6 py-4">
                     <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${report.type === 'غياب' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
                       {getTypeName(report.type)}

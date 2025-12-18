@@ -39,7 +39,8 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
         lateArrivalTime: editingReport.lateArrivalTime || '',
         absenceSession: editingReport.absenceSession || '',
         earlyDepartureTime: editingReport.earlyDepartureTime || '',
-        principalName: editingReport.principalName
+        principalName: editingReport.principalName,
+        createdAt: editingReport.createdAt
       });
     }
   }, [editingReport]);
@@ -64,13 +65,16 @@ const ReportForm: React.FC<ReportFormProps> = ({ selectedEmployees, onSave, edit
     if (selectedEmployees.length === 0) return;
     
     setIsSubmitting(true);
+    const todayStr = new Date().toISOString().split('T')[0];
+
     try {
       if (editingReport) {
         await onSave({ ...formData, employeeId: selectedEmployees[0].id } as Report, selectedEmployees[0].id);
         onCancelEdit();
       } else {
         for (const emp of selectedEmployees) {
-          await onSave({ ...formData } as Report, emp.id);
+          // إضافة تاريخ الإدخال الفعلي لكل تقرير جديد
+          await onSave({ ...formData, createdAt: todayStr } as Report, emp.id);
         }
         setFormData({
           date: new Date().toISOString().split('T')[0],
