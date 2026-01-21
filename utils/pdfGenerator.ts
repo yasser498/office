@@ -326,7 +326,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           <div class="signature-row" style="margin-top: 20px;">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: ..........................</span>
-            <span>التاريخ: <span class="dynamic-data">${report.date} هـ</span></span>
+            <span>التاريخ: <span class="dynamic-data">${report.date} م</span></span>
           </div>
         </div>
 
