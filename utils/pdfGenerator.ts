@@ -142,7 +142,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
             <div>${schoolName}</div>
           </div>
           <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-          <div class="header-left">التاريخ: ${report.date} هـ</div>
+          <div class="header-left">التاريخ: ${report.date} م</div>
         </div>
 
         <div class="title-section">
@@ -262,7 +262,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
             <div>${schoolName}</div>
           </div>
           <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
-          <div class="header-left">التاريخ: ${report.date} هـ</div>
+          <div class="header-left">التاريخ: ${report.date} م</div>
         </div>
 
         <div class="title-section">
@@ -301,7 +301,7 @@ const getLateArrivalHTML = (employee: Employee, report: Report, schoolName: stri
           </div>
           <p style="font-weight: 900; margin: 8px 0;">السلام عليكم ورحمة الله وبركاته &nbsp;&nbsp;&nbsp;&nbsp; وبعد:</p>
           <p style="font-weight: 700; line-height: 1.6;">
-            إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} هـ</span>، اتضح لنا ما يلي:
+            إنه في يوم: <span class="dynamic-data">${dayName}</span>، بتاريخ: <span class="dynamic-data">${report.date} م</span>، اتضح لنا ما يلي:
           </p>
           
           <div style="margin-right: 20px; margin-top: 8px;">
@@ -455,7 +455,7 @@ export const generateWarningLetter = async (employee: Employee, warningLevel: st
         <div class="logo-container"><img src="${MINISTRY_LOGO_URL}"></div>
         <div class="header-left">
           الرقم: ${letterNo || '---'}<br>
-          التاريخ: ${currentDate} هـ<br>
+          التاريخ: ${currentDate} م<br>
           المرفقات: لا يوجد
         </div>
       </div>
