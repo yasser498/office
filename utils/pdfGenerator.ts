@@ -177,8 +177,8 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
         </table>
 
         <div style="background: #f2f2f2; border: 1.5px solid #000; padding: 10px; text-align: center; font-weight: 900; margin-bottom: 12px;">
-          إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date} هـ</span>) 
-          ${gt(gender, 'تغيب', 'تغيبت')} عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date} هـ</span>)
+          إنه في يوم (<span class="dynamic-data">${dayName}</span>) بتاريخ (<span class="dynamic-data">${report.date} م</span>) 
+          ${gt(gender, 'تغيب', 'تغيبت')} عن العمل إلى يوم (<span class="dynamic-data">${endDayName}</span>) الموافق (<span class="dynamic-data">${report.endDate || report.date} م</span>)
         </div>
 
         <div style="border: 1px solid #000; padding: 12px; margin-bottom: 10px;">
@@ -194,7 +194,7 @@ const getAbsenceHTML = (employee: Employee, report: Report, schoolName: string, 
           <div class="signature-row small-text-7" style="margin-top: 15px;">
             <span>${gt(gender, 'مدير المدرسة:', 'مديرة المدرسة:')} <span class="dynamic-data">${principalName}</span></span>
             <span>التوقيع: .........................</span>
-            <span>التاريخ: <span class="dynamic-data">${report.date} هـ</span></span>
+            <span>التاريخ: <span class="dynamic-data">${report.date} م</span></span>
           </div>
         </div>
 
